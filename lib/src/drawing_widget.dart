@@ -74,7 +74,7 @@ class AnimatedDrawing extends StatefulWidget {
   AnimatedDrawing.paths(
     this.paths, {
     //AnimatedDrawing.paths
-    this.paints,
+    this.paints = const <Paint>[],
     //Standard
     this.controller,
     //Simplfied version
@@ -88,10 +88,10 @@ class AnimatedDrawing extends StatefulWidget {
     this.height,
     this.lineAnimation = LineAnimation.oneByOne,
     this.debug = DebugOptions.standard,
-  }) : assetPath = '' {
+  }) : this.assetPath = '' {
     checkAssertions();
     assert(this.paths.isNotEmpty);
-    assert(this.paints.length == this.paths.length);
+    if(this.paints.isNotEmpty) assert(this.paints.length == this.paths.length);
   }
 
   //AnimatedDrawing.svg:
@@ -167,6 +167,7 @@ class AnimatedDrawing extends StatefulWidget {
       return new _AnimatedDrawingWithTickerState();
     }
   }
+
 }
 
 /// Base class for _AnimatedDrawingState
@@ -360,6 +361,14 @@ class _AnimatedDrawingWithTickerState extends _AbstractAnimatedDrawingState
     with SingleTickerProviderStateMixin {
   //Manage state
   bool paused = false;
+
+  @override
+  void didUpdateWidget(AnimatedDrawing oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    controller.duration = widget.duration;
+    //Todo update all other fields as curves
+  }
+
 
   @override
   void initState() {
