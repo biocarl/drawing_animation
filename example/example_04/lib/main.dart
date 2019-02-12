@@ -80,30 +80,22 @@ class _MyHomePageState extends State<MyHomePage> {
                 this.metatron,
                 paints: List<Paint>.generate(this.metatron.length, colorize),
                 run: this.run,
-                // animationOrder: PathOrders.leftToRight,
-                // animationOrder: PathOrders.rightToLeft,
-                // animationOrder: PathOrders.topToBottom,
-                // animationOrder: PathOrders.bottomToTop,
-                // animationOrder: PathOrders.increasingLength.combine(PathOrders.topToBottom),
                 duration: new Duration(seconds: 1),
                 lineAnimation: LineAnimation.oneByOne,
-                // lineAnimation: LineAnimation.allAtOnce,
-                // animationCurve:   Curves.elasticOut,
-                // animationCurve:   Curves.decelerate,
-                // animationCurve:   Curves.bounceInOut,
                 animationCurve: Curves.linear,
                 onFinish: () => setState(() {
                       this.run = false;
                     }),
-                debug: DebugOptions(
-                  fileName: this.projectName,
-                  showBoundingBox: false,
-                  showViewPort: false,
-                  recordFrames: this
-                      .run, //stop recording after one session - sometimes the same frame is painted when rebuild.
-                  resolutionFactor: 2.0,
-                  outPutDir: this.storageDir.path,
-                ),
+                //Uncomment this to write each frame to file
+                // debug: DebugOptions(
+                //   fileName: this.projectName,
+                //   showBoundingBox: false,
+                //   showViewPort: false,
+                //   recordFrames: this
+                //       .run, //stop recording after one session - sometimes the same frame is painted when rebuild.
+                //   resolutionFactor: 2.0,
+                //   outPutDir: this.storageDir.path,
+                // ),
               ))
             : Container(),
       ])),

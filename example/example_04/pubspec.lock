@@ -46,9 +46,9 @@ packages:
   drawing_animation:
     dependency: "direct main"
     description:
-      path: "/home/carl/Code/Android/drawing_animation/"
-      relative: false
-    source: path
+      name: drawing_animation
+      url: "https://pub.dartlang.org"
+    source: hosted
     version: "0.0.1"
   flutter:
     dependency: "direct main"

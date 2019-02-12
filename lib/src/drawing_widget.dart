@@ -97,7 +97,7 @@ class AnimatedDrawing extends StatefulWidget {
   //AnimatedDrawing.svg:
   /// The full path to the SVG asset.
   ///
-  /// For instance an SVG file named my_svg would be specified as "assets/my_svg.svg". Also see * [Supported SVG specifications](#supported-svg-specifications).
+  /// For instance an SVG file named my_svg would be specified as "assets/my_svg.svg". Also see * [Supported SVG specifications](https://github.com/biocarl/drawing_animation#supported-svg-specifications).
   final String assetPath;
 
   //AnimatedDrawing.paths
