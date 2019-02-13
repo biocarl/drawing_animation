@@ -196,6 +196,7 @@ abstract class _AbstractAnimatedDrawingState extends State<AnimatedDrawing> {
         this.widget.onFinish();
         //Here you can do cleanUp for all states
         //...
+
       }
     };
     this.onFinishUpdateState = onFinishUpdateStateDefault;
@@ -361,6 +362,7 @@ class _AnimatedDrawingWithTickerState extends _AbstractAnimatedDrawingState
     with SingleTickerProviderStateMixin {
   //Manage state
   bool paused = false;
+  bool finished = true;
 
   @override
   void didUpdateWidget(AnimatedDrawing oldWidget) {
@@ -398,8 +400,11 @@ class _AnimatedDrawingWithTickerState extends _AbstractAnimatedDrawingState
     this.onFinishUpdateState = () {
       //TODO This is a very bad workaround, FIX! Error message when setting state without timer: "Build scheduled during frame. While the widget tree was being built, laid out, and painted, a new frame was scheduled to rebuild the widget tree. This might be because setState() was called from a layout or paint callback. If a change is needed to the widget tree, it should be applied as the tree is being built. Scheduling a change for the subsequent frame instead results in an interface that lags behind by one frame. If this was done to make your build dependent on a size measured at layout time, consider using a LayoutBuilder, CustomSingleChildLayout, or CustomMultiChildLayout. If, on the other hand, the one frame delay is the desired effect, for example because this is an animation, consider scheduling the frame in a post-frame callback using SchedulerBinding.addPostFrameCallback or using an AnimationController to trigger the animation."
       if (!this.onFinishEvoked) {
-        Timer(
-            Duration(milliseconds: 1), () => this.onFinishUpdateStateDefault());
+        Timer( Duration(milliseconds: 1), () => this.onFinishUpdateStateDefault());
+        //Animation is completed when last frame is painted not when animation controller is finished
+        if (this.controller.status == AnimationStatus.dismissed || this.controller.status == AnimationStatus.completed){
+          this.finished = true;
+        }
         Timer(Duration(milliseconds: 1), () => setState(() {}));
         this.onFinishEvoked = true;
       }
@@ -408,16 +413,13 @@ class _AnimatedDrawingWithTickerState extends _AbstractAnimatedDrawingState
 
   Future<void> buildAnimation() async {
     try {
-      if ((this.paused ||
-              this.controller.status == AnimationStatus.dismissed ||
-              this.controller.status == AnimationStatus.completed) &&
-          this.widget.run == true) {
+      if ((this.paused || (this.finished && !(this.controller.status == AnimationStatus.forward))) && this.widget.run == true) {
         this.paused = false;
+        this.finished = false;
         this.controller.reset();
         this.onFinishEvoked = false;
         this.controller.forward();
-      } else if ((this.controller.status == AnimationStatus.forward) &&
-          this.widget.run == false) {
+      } else if ((this.controller.status == AnimationStatus.forward) && this.widget.run == false) {
         this.controller.stop();
         this.paused = true;
       }
