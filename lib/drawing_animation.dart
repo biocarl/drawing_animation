@@ -70,4 +70,4 @@ library drawing_animation;
 
 export 'src/drawing_widget.dart';
 export 'src/path_order.dart' hide Extractor;
-export 'src/debug.dart';
+export 'src/debug.dart' hide resetFrame,iterateFrame,getFrameCount;

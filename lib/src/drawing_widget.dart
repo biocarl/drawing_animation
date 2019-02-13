@@ -43,7 +43,7 @@ class AnimatedDrawing extends StatefulWidget {
     this.width,
     this.height,
     this.lineAnimation = LineAnimation.oneByOne,
-    this.debug = DebugOptions.standard,
+    this.debug,
   })  : paths = [],
         paints = [] {
     checkAssertions();
@@ -87,7 +87,7 @@ class AnimatedDrawing extends StatefulWidget {
     this.width,
     this.height,
     this.lineAnimation = LineAnimation.oneByOne,
-    this.debug = DebugOptions.standard,
+    this.debug,
   }) : this.assetPath = '' {
     checkAssertions();
     assert(this.paths.isNotEmpty);
@@ -178,6 +178,8 @@ abstract class _AbstractAnimatedDrawingState extends State<AnimatedDrawing> {
   String assetPath;
   PathOrder animationOrder;
 
+  DebugOptions debug;
+
   /// Each [PathSegment] represents a continous Path element of the parsed Svg
   List<PathSegment> pathSegments;
 
@@ -196,7 +198,8 @@ abstract class _AbstractAnimatedDrawingState extends State<AnimatedDrawing> {
         this.widget.onFinish();
         //Here you can do cleanUp for all states
         //...
-
+        if(debug.recordFrames)
+          resetFrame(debug);
       }
     };
     this.onFinishUpdateState = onFinishUpdateStateDefault;
@@ -206,11 +209,16 @@ abstract class _AbstractAnimatedDrawingState extends State<AnimatedDrawing> {
   void initState() {
     super.initState();
     parsePathSegments();
+    // TODO add curves on updateWidget...
     if (this.controller != null && widget.animationCurve != null) {
       this.curve = CurvedAnimation(
           parent: this.controller, curve: widget.animationCurve);
       this.animationCurve = widget.animationCurve;
     }
+
+    //If DebugOptions changes a hot restart is needed.
+    this.debug = this.widget.debug;
+    this.debug ??= DebugOptions();
   }
 
   Animation<double> getAnimation() {
@@ -257,6 +265,10 @@ abstract class _AbstractAnimatedDrawingState extends State<AnimatedDrawing> {
   }
 
   PathPainter getPathPainter() {
+    if (debug.recordFrames && this.controller.status == AnimationStatus.forward){
+        iterateFrame(debug);
+    }
+
     switch (this.widget.lineAnimation) {
       case LineAnimation.oneByOne:
         applyPathOrder();
@@ -266,7 +278,7 @@ abstract class _AbstractAnimatedDrawingState extends State<AnimatedDrawing> {
             getCustomDimensions(),
             this.widget.paints,
             this.onFinishUpdateState,
-            this.widget.debug);
+            this.debug);
       case LineAnimation.allAtOnce:
         return AllAtOncePainter(
             getAnimation(),
@@ -274,7 +286,7 @@ abstract class _AbstractAnimatedDrawingState extends State<AnimatedDrawing> {
             getCustomDimensions(),
             this.widget.paints,
             this.onFinishUpdateState,
-            this.widget.debug);
+            this.debug);
       default:
         return OneByOnePainter(
             getAnimation(),
@@ -282,7 +294,7 @@ abstract class _AbstractAnimatedDrawingState extends State<AnimatedDrawing> {
             getCustomDimensions(),
             this.widget.paints,
             this.onFinishUpdateState,
-            this.widget.debug);
+            this.debug);
     }
   }
 

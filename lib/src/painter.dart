@@ -26,6 +26,7 @@ class AllAtOncePainter extends PathPainter {
   @override
   void paint(Canvas canvas, Size size) {
     canvas = super.paintOrDebug(canvas, size);
+    print("[painter] Frame: ${getFrameCount(this.debugOptions)}");
     if (canPaint) {
       (pathSegments
             ..sort(Extractor.getComparator(PathOrders
@@ -145,8 +146,7 @@ class OneByOnePainter extends PathPainter {
 abstract class PathPainter extends CustomPainter {
   PathPainter(this.animation, this.pathSegments, this.customDimensions,
       this.paints, this.onFinishCallback, this.debugOptions)
-      : frame = -1,
-        canPaint = false,
+      : canPaint = false,
         super(repaint: animation) {
     if (this.pathSegments != null) {
       calculateBoundingBox();
@@ -168,9 +168,6 @@ abstract class PathPainter extends CustomPainter {
 
   /// Substitutes the paint object for each [PathSegment]
   List<Paint> paints;
-
-  /// Number of painted frames
-  int frame;
 
   /// Status of animation
   bool canPaint;
@@ -208,12 +205,13 @@ abstract class PathPainter extends CustomPainter {
   void onFinish(Canvas canvas, Size size) {
     if (this.debugOptions.recordFrames) {
       final ui.Picture picture = recorder.endRecording();
-      if (this.frame >= 0) {
+      int frame = getFrameCount(this.debugOptions);
+      if (frame >= 0) {
         print("Write frame $frame");
         //pass size when you want the whole viewport of the widget
         writeToFile(
             picture,
-            "${debugOptions.outPutDir}/${debugOptions.fileName}_${this.frame}.png",
+            "${debugOptions.outPutDir}/${debugOptions.fileName}_${frame}.png",
             size);
       }
     }
@@ -240,12 +238,9 @@ abstract class PathPainter extends CustomPainter {
   void paintPrepare(Canvas canvas, Size size) {
     this.canPaint = this.animation.status == AnimationStatus.forward ||
         this.animation.status == AnimationStatus.completed;
-    if (this.canPaint) {
-      frame++;
+
+    if (this.canPaint)
       viewBoxToCanvas(canvas, size);
-    } else {
-      frame = -1;
-    }
   }
 
   Future<void> writeToFile(
