@@ -26,7 +26,6 @@ class AllAtOncePainter extends PathPainter {
   @override
   void paint(Canvas canvas, Size size) {
     canvas = super.paintOrDebug(canvas, size);
-    print("[painter] Frame: ${getFrameCount(this.debugOptions)}");
     if (canPaint) {
       (pathSegments
             ..sort(Extractor.getComparator(PathOrders

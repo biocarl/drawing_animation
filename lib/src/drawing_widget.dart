@@ -219,6 +219,7 @@ abstract class _AbstractAnimatedDrawingState extends State<AnimatedDrawing> {
     //If DebugOptions changes a hot restart is needed.
     this.debug = this.widget.debug;
     this.debug ??= DebugOptions();
+
   }
 
   Animation<double> getAnimation() {
@@ -265,10 +266,6 @@ abstract class _AbstractAnimatedDrawingState extends State<AnimatedDrawing> {
   }
 
   PathPainter getPathPainter() {
-    if (debug.recordFrames && this.controller.status == AnimationStatus.forward){
-        iterateFrame(debug);
-    }
-
     switch (this.widget.lineAnimation) {
       case LineAnimation.oneByOne:
         applyPathOrder();
@@ -316,6 +313,20 @@ abstract class _AbstractAnimatedDrawingState extends State<AnimatedDrawing> {
         size: Size.copy(MediaQuery.of(context).size));
   }
 
+  //Call this after controller is defined in child classes
+  void listenToController(){
+    if(this.debug.recordFrames){
+      this.controller.view.addListener(() {
+        setState(() {
+          if (this.controller.status == AnimationStatus.forward){
+              iterateFrame(debug);
+          }
+        });
+      });
+    }
+  }
+
+
   void parsePathSegments() {
     SvgParser parser = new SvgParser();
     //AnimatedDrawing.svg
@@ -346,6 +357,7 @@ class _AnimatedDrawingState extends _AbstractAnimatedDrawingState {
   void initState() {
     super.initState();
     this.controller = this.widget.controller;
+    listenToController();
   }
 
   @override
@@ -391,6 +403,7 @@ class _AnimatedDrawingWithTickerState extends _AbstractAnimatedDrawingState
       vsync: this,
       duration: widget.duration,
     );
+    listenToController();
   }
 
   @override
