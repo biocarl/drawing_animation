@@ -27,10 +27,8 @@ class AllAtOncePainter extends PathPainter {
   void paint(Canvas canvas, Size size) {
     canvas = super.paintOrDebug(canvas, size);
     if (canPaint) {
-      (pathSegments
-            ..sort(Extractor.getComparator(PathOrders
-                .original))) //TODO only if different PathOrder was set, check
-          .forEach((segment) {
+      //pathSegments for AllAtOncePainter are always in the order of PathOrders.original
+      pathSegments.forEach((segment) {
         Path subPath = segment.path
             .computeMetrics()
             .first
@@ -238,8 +236,7 @@ abstract class PathPainter extends CustomPainter {
     this.canPaint = this.animation.status == AnimationStatus.forward ||
         this.animation.status == AnimationStatus.completed;
 
-    if (this.canPaint)
-      viewBoxToCanvas(canvas, size);
+    if (this.canPaint) viewBoxToCanvas(canvas, size);
   }
 
   Future<void> writeToFile(

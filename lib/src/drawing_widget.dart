@@ -91,7 +91,7 @@ class AnimatedDrawing extends StatefulWidget {
   }) : this.assetPath = '' {
     checkAssertions();
     assert(this.paths.isNotEmpty);
-    if(this.paints.isNotEmpty) assert(this.paints.length == this.paths.length);
+    if (this.paints.isNotEmpty) assert(this.paints.length == this.paths.length);
   }
 
   //AnimatedDrawing.svg:
@@ -167,7 +167,6 @@ class AnimatedDrawing extends StatefulWidget {
       return new _AnimatedDrawingWithTickerState();
     }
   }
-
 }
 
 /// Base class for _AnimatedDrawingState
@@ -192,12 +191,11 @@ abstract class _AbstractAnimatedDrawingState extends State<AnimatedDrawing> {
   /// Ensure that callback fires off only once even widget is rebuild.
   bool onFinishEvoked = false;
 
-
   @override
   void didUpdateWidget(AnimatedDrawing oldWidget) {
     super.didUpdateWidget(oldWidget);
     //Update fields which are valid for both State classes
-    if(this.animationOrder != this.widget.animationOrder){
+    if (this.animationOrder != this.widget.animationOrder) {
       applyPathOrder();
     }
   }
@@ -208,8 +206,7 @@ abstract class _AbstractAnimatedDrawingState extends State<AnimatedDrawing> {
         this.widget.onFinish();
         //Here you can do cleanUp for all states
         //...
-        if(debug.recordFrames)
-          resetFrame(debug);
+        if (debug.recordFrames) resetFrame(debug);
       }
     };
     this.onFinishUpdateState = onFinishUpdateStateDefault;
@@ -244,32 +241,35 @@ abstract class _AbstractAnimatedDrawingState extends State<AnimatedDrawing> {
     }
   }
 
-  //TODO clean this up.
   void applyPathOrder() {
     if (this.pathSegments != null) {
-      //Experimental path we always have to resort - TODO this easily becomes a performance issue when a parent animation controller calls this 60 fps
-      if (this.widget.paths != null) {
+      //[A] Persistent paths from _.svg
+      if (this.widget.paths.isEmpty) {
         if (this.widget.animationOrder != null) {
-          this
-              .pathSegments
-              .sort(Extractor.getComparator(this.widget.animationOrder));
-        }
-      } else {
-        //New animationOrder submitted
-        if (this.widget.animationOrder != null) {
-          if (this.widget.animationOrder != this.animationOrder) {
+          if (this.widget.lineAnimation == LineAnimation.allAtOnce && this.animationOrder != PathOrders.original) {
+            // always keep paths for allAtOnce animation in original path order so we do not sort for the correct PaintOrder later on (which is pretty expensive for AllAtOncePainter)
+            this
+                .pathSegments
+                .sort(Extractor.getComparator(PathOrders.original));
+            this.animationOrder = PathOrders.original;
+            //Apply new PathOrder
+          } else if (this.widget.animationOrder != this.animationOrder) {
             this
                 .pathSegments
                 .sort(Extractor.getComparator(this.widget.animationOrder));
+            this.animationOrder = this.widget.animationOrder;
           }
-          //Restore original order
+          //Restore original order when field was nulled.
         } else if (this.animationOrder != null &&
             this.animationOrder != PathOrders.original) {
           this.pathSegments.sort(Extractor.getComparator(PathOrders.original));
+          this.animationOrder = PathOrders.original;
         }
+        //[B] Experimental: Tmp paths from _.paths: We always have to resort - TODO this easily becomes a performance issue when a parent animation controller calls this 60 fps
+      } if (this.widget.animationOrder != null && this.widget.lineAnimation != LineAnimation.allAtOnce) {
+          this .pathSegments .sort(Extractor.getComparator(this.widget.animationOrder));
       }
     }
-    this.animationOrder = this.widget.animationOrder;
   }
 
   PathPainter getPathPainter() {
@@ -320,18 +320,17 @@ abstract class _AbstractAnimatedDrawingState extends State<AnimatedDrawing> {
   }
 
   //Call this after controller is defined in child classes
-  void listenToController(){
-    if(this.debug.recordFrames){
+  void listenToController() {
+    if (this.debug.recordFrames) {
       this.controller.view.addListener(() {
         setState(() {
-          if (this.controller.status == AnimationStatus.forward){
-              iterateFrame(debug);
+          if (this.controller.status == AnimationStatus.forward) {
+            iterateFrame(debug);
           }
         });
       });
     }
   }
-
 
   void parsePathSegments() {
     SvgParser parser = new SvgParser();
@@ -348,7 +347,9 @@ abstract class _AbstractAnimatedDrawingState extends State<AnimatedDrawing> {
 
       //AnimatedDrawing.paths
     } else if (this.widget.paths.isNotEmpty) {
-      parser.loadFromPaths(this.widget.paths); //Path object are parsed completely upon every state change
+      parser.loadFromPaths(this
+          .widget
+          .paths); //Path object are parsed completely upon every state change
       setState(() {
         this.pathSegments = parser.getPathSegments();
         applyPathOrder();
@@ -365,7 +366,6 @@ class _AnimatedDrawingState extends _AbstractAnimatedDrawingState {
     this.controller = this.widget.controller;
     listenToController();
   }
-
 
   @override
   void didUpdateWidget(AnimatedDrawing oldWidget) {
@@ -407,7 +407,6 @@ class _AnimatedDrawingWithTickerState extends _AbstractAnimatedDrawingState
     controller.duration = widget.duration;
   }
 
-
   @override
   void initState() {
     super.initState();
@@ -437,9 +436,11 @@ class _AnimatedDrawingWithTickerState extends _AbstractAnimatedDrawingState
     this.onFinishUpdateState = () {
       //TODO This is a very bad workaround, FIX! Error message when setting state without timer: "Build scheduled during frame. While the widget tree was being built, laid out, and painted, a new frame was scheduled to rebuild the widget tree. This might be because setState() was called from a layout or paint callback. If a change is needed to the widget tree, it should be applied as the tree is being built. Scheduling a change for the subsequent frame instead results in an interface that lags behind by one frame. If this was done to make your build dependent on a size measured at layout time, consider using a LayoutBuilder, CustomSingleChildLayout, or CustomMultiChildLayout. If, on the other hand, the one frame delay is the desired effect, for example because this is an animation, consider scheduling the frame in a post-frame callback using SchedulerBinding.addPostFrameCallback or using an AnimationController to trigger the animation."
       if (!this.onFinishEvoked) {
-        Timer( Duration(milliseconds: 1), () => this.onFinishUpdateStateDefault());
+        Timer(
+            Duration(milliseconds: 1), () => this.onFinishUpdateStateDefault());
         //Animation is completed when last frame is painted not when animation controller is finished
-        if (this.controller.status == AnimationStatus.dismissed || this.controller.status == AnimationStatus.completed){
+        if (this.controller.status == AnimationStatus.dismissed ||
+            this.controller.status == AnimationStatus.completed) {
           this.finished = true;
         }
         Timer(Duration(milliseconds: 1), () => setState(() {}));
@@ -450,13 +451,17 @@ class _AnimatedDrawingWithTickerState extends _AbstractAnimatedDrawingState
 
   Future<void> buildAnimation() async {
     try {
-      if ((this.paused || (this.finished && !(this.controller.status == AnimationStatus.forward))) && this.widget.run == true) {
+      if ((this.paused ||
+              (this.finished &&
+                  !(this.controller.status == AnimationStatus.forward))) &&
+          this.widget.run == true) {
         this.paused = false;
         this.finished = false;
         this.controller.reset();
         this.onFinishEvoked = false;
         this.controller.forward();
-      } else if ((this.controller.status == AnimationStatus.forward) && this.widget.run == false) {
+      } else if ((this.controller.status == AnimationStatus.forward) &&
+          this.widget.run == false) {
         this.controller.stop();
         this.paused = true;
       }
