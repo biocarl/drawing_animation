@@ -246,7 +246,8 @@ abstract class _AbstractAnimatedDrawingState extends State<AnimatedDrawing> {
       //[A] Persistent paths from _.svg
       if (this.widget.paths.isEmpty) {
         if (this.widget.animationOrder != null) {
-          if (this.widget.lineAnimation == LineAnimation.allAtOnce && this.animationOrder != PathOrders.original) {
+          if (this.widget.lineAnimation == LineAnimation.allAtOnce &&
+              this.animationOrder != PathOrders.original) {
             // always keep paths for allAtOnce animation in original path order so we do not sort for the correct PaintOrder later on (which is pretty expensive for AllAtOncePainter)
             this
                 .pathSegments
@@ -266,8 +267,12 @@ abstract class _AbstractAnimatedDrawingState extends State<AnimatedDrawing> {
           this.animationOrder = PathOrders.original;
         }
         //[B] Experimental: Tmp paths from _.paths: We always have to resort - TODO this easily becomes a performance issue when a parent animation controller calls this 60 fps
-      } if (this.widget.animationOrder != null && this.widget.lineAnimation != LineAnimation.allAtOnce) {
-          this .pathSegments .sort(Extractor.getComparator(this.widget.animationOrder));
+      }
+      if (this.widget.animationOrder != null &&
+          this.widget.lineAnimation != LineAnimation.allAtOnce) {
+        this
+            .pathSegments
+            .sort(Extractor.getComparator(this.widget.animationOrder));
       }
     }
   }

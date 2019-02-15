@@ -24,14 +24,14 @@ class DebugOptions {
   int _frameCount = -1;
 }
 
-
-void resetFrame(DebugOptions options){
+void resetFrame(DebugOptions options) {
   options._frameCount = -1;
 }
-void iterateFrame(DebugOptions options){
+
+void iterateFrame(DebugOptions options) {
   options._frameCount++;
 }
-int getFrameCount(DebugOptions options){
+
+int getFrameCount(DebugOptions options) {
   return options._frameCount;
 }
-
