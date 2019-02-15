@@ -208,7 +208,7 @@ abstract class PathPainter extends CustomPainter {
         //pass size when you want the whole viewport of the widget
         writeToFile(
             picture,
-            "${debugOptions.outPutDir}/${debugOptions.fileName}_${frame}.png",
+            "${debugOptions.outPutDir}/${debugOptions.fileName}_$frame.png",
             size);
       }
     }

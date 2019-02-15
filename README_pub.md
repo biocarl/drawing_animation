@@ -1,17 +1,15 @@
-# drawing_animation [![Pub](https://img.shields.io/pub/v/drawing_animation.svg)](https://pub.dartlang.org/packages/drawing_animation)
-
+# drawing_animation [![Pub](https://img.shields.io/pub/v/drawing_animation.svg)](https://pub.dartlang.org/packages/drawing_animation) [![awesome](https://img.shields.io/badge/Awesome-Flutter-blue.svg?longCache=true&style=flat-square)](https://github.com/Solido/awesome-flutter)
 
 The rendering library exposes a central widget called `AnimatedDrawing` which allows to render SVG paths (via `AnimatedDrawing.svg`) or Flutter Path objects (via `AnimatedDrawing.paths`) in a drawing like fashion.
 
-
-## Getting Started
+## Getting Started  - AnimatedDrawing.svg
 To get started with the `drawing_animation` package you need a valid Svg file.
 Currently only simple path elements without transforms are supported (see [Supported SVG specifications](https://github.com/biocarl/drawing_animation#supported-svg-specifications))
 
 1. **Add dependency in your `pubspec.yaml`**
 ```yaml
 dependencies:
-  drawing_animation: ^0.0.1
+  drawing_animation: ^0.0.3
 
 ```
 
@@ -50,7 +48,8 @@ assets:
 4. Check out examples in the `examples` folder. It seems that antialising for the Paint/Canvas is switched off when using debug mode. For pretty results use `flutter run --release`.
 
 ## Getting Started  - AnimatedDrawing.paths (still experimental)
-By providing Path objects directly to the widget, elements can be changed dynamically, even during the animation. The internal data structure is rebuild every time the state changes, therefore the animation performance might suffer if the amount of elements in `paths` is very high. More examples will be provided soon (for now see [Example_01](https://github.com/biocarl/drawing_animation/tree/master/example/example_01) and [Example_04](https://github.com/biocarl/drawing_animation/tree/master/example/example_04)).
+By providing Path objects directly to the widget, elements can be changed dynamically, even during the animation. The internal data structure is rebuild every time the state changes, therefore the animation performance might suffer if the amount of elements in `paths` is very high (see Limitations). More examples will be provided soon (for now see [Example_01](https://github.com/biocarl/drawing_animation/tree/master/example/example_01) and [Example_04](https://github.com/biocarl/drawing_animation/tree/master/example/example_04)).
+
   ```dart
   AnimatedDrawing.paths(
       [
@@ -66,3 +65,6 @@ By providing Path objects directly to the widget, elements can be changed dynami
       }),
     )
   ```
+**Current limitations:**
+
+As stated, for every state change of the widget, the internal data structure for the path objects is rebuilt. When the amount of provided path objects is high and a custom `animationOrder` is defined (which triggers a sorting operation over the data structure) it can result in lags. This becomes especially apparent when the state is rebuild at 60fps by another animation (e.g. rotating the path objects at every frame). Any suggestions on how to elegantly solve this are very welcome :-)
