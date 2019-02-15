@@ -192,6 +192,16 @@ abstract class _AbstractAnimatedDrawingState extends State<AnimatedDrawing> {
   /// Ensure that callback fires off only once even widget is rebuild.
   bool onFinishEvoked = false;
 
+
+  @override
+  void didUpdateWidget(AnimatedDrawing oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    //Update fields which are valid for both State classes
+    if(this.animationOrder != this.widget.animationOrder){
+      applyPathOrder();
+    }
+  }
+
   void prepareBuild() {
     this.onFinishUpdateStateDefault = () {
       if (this.widget.onFinish != null) {
@@ -212,14 +222,13 @@ abstract class _AbstractAnimatedDrawingState extends State<AnimatedDrawing> {
     // TODO add curves on updateWidget...
     if (this.controller != null && widget.animationCurve != null) {
       this.curve = CurvedAnimation(
-          parent: this.controller, curve: widget.animationCurve);
+          parent: this.controller, curve: this.widget.animationCurve);
       this.animationCurve = widget.animationCurve;
     }
 
     //If DebugOptions changes a hot restart is needed.
     this.debug = this.widget.debug;
     this.debug ??= DebugOptions();
-
   }
 
   Animation<double> getAnimation() {
@@ -238,13 +247,12 @@ abstract class _AbstractAnimatedDrawingState extends State<AnimatedDrawing> {
   //TODO clean this up.
   void applyPathOrder() {
     if (this.pathSegments != null) {
-      //Experimental path we always have to resort
+      //Experimental path we always have to resort - TODO this easily becomes a performance issue when a parent animation controller calls this 60 fps
       if (this.widget.paths != null) {
         if (this.widget.animationOrder != null) {
           this
               .pathSegments
               .sort(Extractor.getComparator(this.widget.animationOrder));
-          this.animationOrder = this.widget.animationOrder;
         }
       } else {
         //New animationOrder submitted
@@ -253,22 +261,20 @@ abstract class _AbstractAnimatedDrawingState extends State<AnimatedDrawing> {
             this
                 .pathSegments
                 .sort(Extractor.getComparator(this.widget.animationOrder));
-            this.animationOrder = this.widget.animationOrder;
           }
           //Restore original order
         } else if (this.animationOrder != null &&
             this.animationOrder != PathOrders.original) {
           this.pathSegments.sort(Extractor.getComparator(PathOrders.original));
-          this.animationOrder = this.widget.animationOrder;
         }
       }
     }
+    this.animationOrder = this.widget.animationOrder;
   }
 
   PathPainter getPathPainter() {
     switch (this.widget.lineAnimation) {
       case LineAnimation.oneByOne:
-        applyPathOrder();
         return OneByOnePainter(
             getAnimation(),
             this.pathSegments,
@@ -342,7 +348,7 @@ abstract class _AbstractAnimatedDrawingState extends State<AnimatedDrawing> {
 
       //AnimatedDrawing.paths
     } else if (this.widget.paths.isNotEmpty) {
-      parser.loadFromPaths(this.widget.paths);
+      parser.loadFromPaths(this.widget.paths); //Path object are parsed completely upon every state change
       setState(() {
         this.pathSegments = parser.getPathSegments();
         applyPathOrder();
@@ -358,6 +364,13 @@ class _AnimatedDrawingState extends _AbstractAnimatedDrawingState {
     super.initState();
     this.controller = this.widget.controller;
     listenToController();
+  }
+
+
+  @override
+  void didUpdateWidget(AnimatedDrawing oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    this.controller = this.widget.controller;
   }
 
   @override
@@ -392,7 +405,6 @@ class _AnimatedDrawingWithTickerState extends _AbstractAnimatedDrawingState
   void didUpdateWidget(AnimatedDrawing oldWidget) {
     super.didUpdateWidget(oldWidget);
     controller.duration = widget.duration;
-    //Todo update all other fields as curves
   }
 
 
