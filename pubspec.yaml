@@ -1,12 +1,13 @@
 name: drawing_animation
 description: An dart-only library for gradually painting SVG path objects on canvas (drawing line animation).
-version: 0.0.3
+version: 0.0.4
 author: Carl Hauck <cahaucks@gmail.com>
 repository: https://github.com/biocarl/drawing_animation
 homepage: https://twitter.com/cahaucks
 
 environment:
-  sdk: ">=2.1.0 <3.0.0"
+  sdk: ">2.0.0 <3.0.0"
+  flutter: ">=0.7.3 <2.0.0"
 
 dependencies:
   flutter:
@@ -19,6 +20,3 @@ dev_dependencies:
     sdk: flutter
   test: ^1.5.1
   mockito: ^4.0.0
-
-# The following section is specific to Flutter.
-flutter:

@@ -15,7 +15,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  drawing_animation: ^0.0.3
+  drawing_animation: ^0.0.4
   path_provider: ^0.5.0
   simple_permissions: ^0.1.9
   vector_math: any

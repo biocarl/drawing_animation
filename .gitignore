@@ -29,3 +29,7 @@ FORMAT
 DEPLOY
 img/
 example/example_0/
+
+
+#Publish
+store/
