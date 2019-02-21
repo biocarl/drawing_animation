@@ -91,8 +91,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 //   fileName: this.projectName,
                 //   showBoundingBox: false,
                 //   showViewPort: false,
-                //   recordFrames: this
-                //       .run, //stop recording after one session - sometimes the same frame is painted when rebuild.
+                //   recordFrames: true,
                 //   resolutionFactor: 2.0,
                 //   outPutDir: this.storageDir.path,
                 // ),
