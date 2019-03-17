@@ -20,9 +20,10 @@ class AllAtOncePainter extends PathPainter {
       Size customDimensions,
       List<Paint> paints,
       PaintedSegmentCallback onFinishCallback,
+      bool scaleToViewport,
       DebugOptions debugOptions)
       : super(animation, pathSegments, customDimensions, paints,
-            onFinishCallback, debugOptions);
+            onFinishCallback, scaleToViewport, debugOptions);
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -58,10 +59,11 @@ class OneByOnePainter extends PathPainter {
       Size customDimensions,
       List<Paint> paints,
       PaintedSegmentCallback onFinishCallback,
+      bool scaleToViewport,
       DebugOptions debugOptions)
       : this.totalPathSum = 0,
         super(animation, pathSegments, customDimensions, paints,
-            onFinishCallback, debugOptions) {
+            onFinishCallback, scaleToViewport, debugOptions) {
     if (this.pathSegments != null) {
       this.pathSegments.forEach((e) => this.totalPathSum += e.length);
     }
@@ -119,21 +121,21 @@ class OneByOnePainter extends PathPainter {
         lastPathSegment.path = subPath;
         toPaint.add(lastPathSegment);
       }
-        //[3.2] Restore rendering order - last path element in original PathOrder should be last painted -> most visible
-        //[3.3] Paint elements
-        (toPaint..sort(Extractor.getComparator(PathOrders.original)))
-            .forEach((segment) {
-          paint = (this.paints.isNotEmpty)
-              ? this.paints[segment.pathIndex]
-              : (new Paint() //Paint per path TODO implement Paint per PathSegment?
-                //TODO Debug disappearing first lineSegment
-                // ..color = (segment.relativeIndex == 0 && segment.pathIndex== 0) ? Colors.red : ((segment.relativeIndex == 1) ? Colors.blue : segment.color)
-                ..color = segment.color
-                ..style = PaintingStyle.stroke
-                ..strokeCap = StrokeCap.square
-                ..strokeWidth = segment.strokeWidth);
-          canvas.drawPath(segment.path, paint);
-        });
+      //[3.2] Restore rendering order - last path element in original PathOrder should be last painted -> most visible
+      //[3.3] Paint elements
+      (toPaint..sort(Extractor.getComparator(PathOrders.original)))
+          .forEach((segment) {
+        paint = (this.paints.isNotEmpty)
+            ? this.paints[segment.pathIndex]
+            : (new Paint() //Paint per path TODO implement Paint per PathSegment?
+              //TODO Debug disappearing first lineSegment
+              // ..color = (segment.relativeIndex == 0 && segment.pathIndex== 0) ? Colors.red : ((segment.relativeIndex == 1) ? Colors.blue : segment.color)
+              ..color = segment.color
+              ..style = PaintingStyle.stroke
+              ..strokeCap = StrokeCap.square
+              ..strokeWidth = segment.strokeWidth);
+        canvas.drawPath(segment.path, paint);
+      });
 
       if (this.animation.value != 1.0) {
         //[3.4] Remove last subPath
@@ -151,8 +153,14 @@ class OneByOnePainter extends PathPainter {
 
 /// Abstract implementation of painting a list of [PathSegment] elements to a canvas
 abstract class PathPainter extends CustomPainter {
-  PathPainter(this.animation, this.pathSegments, this.customDimensions,
-      this.paints, this.onFinishCallback, this.debugOptions)
+  PathPainter(
+      this.animation,
+      this.pathSegments,
+      this.customDimensions,
+      this.paints,
+      this.onFinishCallback,
+      this.scaleToViewport,
+      this.debugOptions)
       : canPaint = false,
         super(repaint: animation) {
     if (this.pathSegments != null) {
@@ -178,6 +186,8 @@ abstract class PathPainter extends CustomPainter {
 
   /// Status of animation
   bool canPaint;
+
+  bool scaleToViewport;
 
   /// Evoked when frame is painted
   PaintedSegmentCallback onFinishCallback;
@@ -305,24 +315,25 @@ abstract class PathPainter extends CustomPainter {
       canvas.drawRect(clipRect1, ppp);
     }
 
-    //Viewbox with Offset.zero
-    Size viewBox = (this.customDimensions != null)
-        ? this.customDimensions
-        : Size.copy(size);
+    if (scaleToViewport) {
+      //Viewbox with Offset.zero
+      Size viewBox = (this.customDimensions != null)
+          ? this.customDimensions
+          : Size.copy(size);
+      _ScaleFactor scale = calculateScaleFactor(viewBox);
+      canvas.scale(scale.x, scale.y);
 
-    _ScaleFactor scale = calculateScaleFactor(viewBox);
-    canvas.scale(scale.x, scale.y);
+      //If offset
+      Offset offset = Offset.zero - this.pathBoundingBox.topLeft;
+      canvas.translate(offset.dx, offset.dy);
 
-    //If offset
-    Offset offset = Offset.zero - this.pathBoundingBox.topLeft;
-    canvas.translate(offset.dx, offset.dy);
-
-    //Center offset - TODO should this be a option flag?
-    if (this.debugOptions.recordFrames != true) {
-      Offset center = Offset(
-          (size.width / scale.x - this.pathBoundingBox.width) / 2,
-          (size.height / scale.y - this.pathBoundingBox.height) / 2);
-      canvas.translate(center.dx, center.dy);
+      //Center offset - TODO should this be a option flag?
+      if (this.debugOptions.recordFrames != true) {
+        Offset center = Offset(
+            (size.width / scale.x - this.pathBoundingBox.width) / 2,
+            (size.height / scale.y - this.pathBoundingBox.height) / 2);
+        canvas.translate(center.dx, center.dy);
+      }
     }
 
     //Clip bounds

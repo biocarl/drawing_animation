@@ -17,7 +17,7 @@ Currently only simple path elements without transforms are supported (see [Suppo
 1. **Add dependency in your `pubspec.yaml`**
 ```yaml
 dependencies:
-  drawing_animation: ^0.0.4
+  drawing_animation: ^0.0.5
 
 ```
 
@@ -98,6 +98,7 @@ Here is increasingly growing list with all available parameters and their visual
 |                                    | **Other**            |     |
 | `onFinish` <br/><br/> *Callback when one animation cycle is finished. By default every animation repeats infinitely.*|  | |
 | `onPaint` <br/><br/> *Callback when a complete path is painted to the canvas. Returns with the relative index and the Path element itself.*|  | |
+| `scaleToViewport` <br/><br/> *Path objects are scaled to the available viewport while maintaining the aspect ratio. Defaults to true.*|  | |
 
 ## Supported SVG specifications
    - Only path elements (`<path d="M3m1....">`) are supported for now. I'm currently considering to add [flutter_svg](https://pub.dartlang.org/packages/flutter_svg) as dependency for more complete SVG parsing.
@@ -134,7 +135,7 @@ For example with Inkscape:
   - Showcase: Create fractals with L-Systems
   - AnimatedDrawing.paths:
     * Provide some kind of fixed boundingBox since Paths and the overall bounding box can dynamically change (e.g. rotating circle pulses in size)
-    * ...
+    * Also custom viewport
 
 ## Credits
 

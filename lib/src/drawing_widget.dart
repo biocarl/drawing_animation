@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:ui';
-import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -49,6 +48,7 @@ class AnimatedDrawing extends StatefulWidget {
     this.width,
     this.height,
     this.lineAnimation = LineAnimation.oneByOne,
+    this.scaleToViewport = true,
     this.debug,
   })  : paths = [],
         paints = [] {
@@ -94,6 +94,7 @@ class AnimatedDrawing extends StatefulWidget {
     this.width,
     this.height,
     this.lineAnimation = LineAnimation.oneByOne,
+    this.scaleToViewport = true,
     this.debug,
   }) : this.assetPath = '' {
     checkAssertions();
@@ -163,6 +164,11 @@ class AnimatedDrawing extends StatefulWidget {
 
   /// Specifies in which way the path elements are drawn to the canvas.
   final LineAnimation lineAnimation;
+
+  /// Denotes if the path elements should be scaled in order to fit into viewport.
+  ///
+  /// Defaults to true.
+  final bool scaleToViewport;
 
   /// For debugging, not for production use.
   final DebugOptions debug;
@@ -321,6 +327,7 @@ abstract class _AbstractAnimatedDrawingState extends State<AnimatedDrawing> {
             getCustomDimensions(),
             this.widget.paints,
             this.onFinishFrame,
+            this.widget.scaleToViewport,
             this.debug);
       case LineAnimation.allAtOnce:
         return AllAtOncePainter(
@@ -329,6 +336,7 @@ abstract class _AbstractAnimatedDrawingState extends State<AnimatedDrawing> {
             getCustomDimensions(),
             this.widget.paints,
             this.onFinishFrame,
+            this.widget.scaleToViewport,
             this.debug);
       default:
         return OneByOnePainter(
@@ -337,6 +345,7 @@ abstract class _AbstractAnimatedDrawingState extends State<AnimatedDrawing> {
             getCustomDimensions(),
             this.widget.paints,
             this.onFinishFrame,
+            this.widget.scaleToViewport,
             this.debug);
     }
   }

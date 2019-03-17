@@ -1,5 +1,9 @@
 # CHANGES
 
+## 0.0.5
+Allow to toggle scaleToViewport
+Callback for painted path added
+
 ## 0.0.4
 Fix SDK version
 
