@@ -108,16 +108,17 @@ class OneByOnePainter extends PathPainter {
       this._paintedLength = currentLength;
       // //[3] Paint all selected paths to canvas
       Paint paint;
-
+      Path tmp;
       if (this.animation.value == 1.0) {
         //hotfix: to ensure callback for last segment TODO not pretty
         toPaint.clear();
         toPaint.addAll(pathSegments);
       } else {
         //[3.1] Add last subPath temporarily
-        Path tmp = Path.from(lastPathSegment.path);
+        tmp = Path.from(lastPathSegment.path);
         lastPathSegment.path = subPath;
         toPaint.add(lastPathSegment);
+      }
         //[3.2] Restore rendering order - last path element in original PathOrder should be last painted -> most visible
         //[3.3] Paint elements
         (toPaint..sort(Extractor.getComparator(PathOrders.original)))
@@ -133,6 +134,8 @@ class OneByOnePainter extends PathPainter {
                 ..strokeWidth = segment.strokeWidth);
           canvas.drawPath(segment.path, paint);
         });
+
+      if (this.animation.value != 1.0) {
         //[3.4] Remove last subPath
         toPaint.remove(lastPathSegment);
         lastPathSegment.path = tmp;
