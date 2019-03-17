@@ -10,6 +10,7 @@ import 'package:flutter/services.dart';
 import 'debug.dart';
 import 'parser.dart';
 import 'path_order.dart';
+import 'types.dart';
 
 /// Paints a list of [PathSegment] all-at-once to a canvas
 class AllAtOncePainter extends PathPainter {
@@ -18,7 +19,7 @@ class AllAtOncePainter extends PathPainter {
       List<PathSegment> pathSegments,
       Size customDimensions,
       List<Paint> paints,
-      VoidCallback onFinishCallback,
+      PaintedSegmentCallback onFinishCallback,
       DebugOptions debugOptions)
       : super(animation, pathSegments, customDimensions, paints,
             onFinishCallback, debugOptions);
@@ -56,7 +57,7 @@ class OneByOnePainter extends PathPainter {
       List<PathSegment> pathSegments,
       Size customDimensions,
       List<Paint> paints,
-      VoidCallback onFinishCallback,
+      PaintedSegmentCallback onFinishCallback,
       DebugOptions debugOptions)
       : this.totalPathSum = 0,
         super(animation, pathSegments, customDimensions, paints,
@@ -107,30 +108,36 @@ class OneByOnePainter extends PathPainter {
       this._paintedLength = currentLength;
       // //[3] Paint all selected paths to canvas
       Paint paint;
-      //[3.1] Add last subPath temporarily
-      Path tmp = Path.from(lastPathSegment.path);
-      lastPathSegment.path = subPath;
-      toPaint.add(lastPathSegment);
-      //[3.2] Restore rendering order - last path element in original PathOrder should be last painted -> most visible
-      //[3.3] Paint elements
-      (toPaint..sort(Extractor.getComparator(PathOrders.original)))
-          .forEach((segment) {
-        paint = (this.paints.isNotEmpty)
-            ? this.paints[segment.pathIndex]
-            : (new Paint() //Paint per path TODO implement Paint per PathSegment?
-              //TODO Debug disappearing first lineSegment
-              // ..color = (segment.relativeIndex == 0 && segment.pathIndex== 0) ? Colors.red : ((segment.relativeIndex == 1) ? Colors.blue : segment.color)
-              ..color = segment.color
-              ..style = PaintingStyle.stroke
-              ..strokeCap = StrokeCap.square
-              ..strokeWidth = segment.strokeWidth);
-        canvas.drawPath(segment.path, paint);
-      });
-      //[3.4] Remove last subPath
-      toPaint.remove(lastPathSegment);
-      lastPathSegment.path = tmp;
 
-      super.onFinish(canvas, size);
+      if (this.animation.value == 1.0) {
+        //hotfix: to ensure callback for last segment TODO not pretty
+        toPaint.clear();
+        toPaint.addAll(pathSegments);
+      } else {
+        //[3.1] Add last subPath temporarily
+        Path tmp = Path.from(lastPathSegment.path);
+        lastPathSegment.path = subPath;
+        toPaint.add(lastPathSegment);
+        //[3.2] Restore rendering order - last path element in original PathOrder should be last painted -> most visible
+        //[3.3] Paint elements
+        (toPaint..sort(Extractor.getComparator(PathOrders.original)))
+            .forEach((segment) {
+          paint = (this.paints.isNotEmpty)
+              ? this.paints[segment.pathIndex]
+              : (new Paint() //Paint per path TODO implement Paint per PathSegment?
+                //TODO Debug disappearing first lineSegment
+                // ..color = (segment.relativeIndex == 0 && segment.pathIndex== 0) ? Colors.red : ((segment.relativeIndex == 1) ? Colors.blue : segment.color)
+                ..color = segment.color
+                ..style = PaintingStyle.stroke
+                ..strokeCap = StrokeCap.square
+                ..strokeWidth = segment.strokeWidth);
+          canvas.drawPath(segment.path, paint);
+        });
+        //[3.4] Remove last subPath
+        toPaint.remove(lastPathSegment);
+        lastPathSegment.path = tmp;
+      }
+      super.onFinish(canvas, size, lastPainted: toPaint.length - 1);
     } else {
       this.paintedSegmentIndex = 0;
       this._paintedLength = 0.0;
@@ -169,8 +176,8 @@ abstract class PathPainter extends CustomPainter {
   /// Status of animation
   bool canPaint;
 
-  /// Evoked when last path of animation is painted
-  VoidCallback onFinishCallback;
+  /// Evoked when frame is painted
+  PaintedSegmentCallback onFinishCallback;
 
   //For debug - show widget and svg bounding box and record canvas to *.png
   DebugOptions debugOptions;
@@ -199,7 +206,8 @@ abstract class PathPainter extends CustomPainter {
     this.strokeWidth = strokeWidth;
   }
 
-  void onFinish(Canvas canvas, Size size) {
+  void onFinish(Canvas canvas, Size size, {int lastPainted = -1}) {
+    //-1: no segment was painted yet, 0 first segment
     if (this.debugOptions.recordFrames) {
       final ui.Picture picture = recorder.endRecording();
       int frame = getFrameCount(this.debugOptions);
@@ -212,10 +220,7 @@ abstract class PathPainter extends CustomPainter {
             size);
       }
     }
-
-    if (this.animation.status == AnimationStatus.completed) {
-      this.onFinishCallback();
-    }
+    this.onFinishCallback(lastPainted);
   }
 
   Canvas paintOrDebug(Canvas canvas, Size size) {

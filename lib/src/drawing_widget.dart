@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:ui';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -8,6 +9,10 @@ import 'debug.dart';
 import 'painter.dart';
 import 'parser.dart';
 import 'path_order.dart';
+import 'types.dart';
+
+/// Callback when path is painted.
+typedef PaintedPathCallback = void Function(int, Path);
 
 /// A widget that iteratively draws path segment data to a defined canvas (drawing line animation).
 ///
@@ -38,6 +43,7 @@ class AnimatedDrawing extends StatefulWidget {
     this.duration,
     this.animationCurve,
     this.onFinish,
+    this.onPaint,
     //For both
     this.animationOrder,
     this.width,
@@ -82,6 +88,7 @@ class AnimatedDrawing extends StatefulWidget {
     this.duration,
     this.animationCurve,
     this.onFinish,
+    this.onPaint,
     //For both
     this.animationOrder,
     this.width,
@@ -130,6 +137,12 @@ class AnimatedDrawing extends StatefulWidget {
   /// By default every animation repeats infinitely. For running an animation only once you can use this callback to set [run] to false after the first animation cycle completed. This field is ignored when [controller] is provided and the animation is set to [controller.repeat()].
   final VoidCallback onFinish;
 
+  /// Callback when a complete path is painted to the canvas.
+  ///
+  /// Returns with the relative index and the Path element itself.
+  /// If the animation reverses (for examples when applying animation curves) the callback might fire several times for the same path.
+  final PaintedPathCallback onPaint;
+
   ///Denotes the order in which the path elements are drawn to canvas when [lineAnimation] is set to [LineAnimation.oneByOne]. When no [animationOrder] is specified it defaults to [PathOrder.original]. Do not confuse this option with the default rendering order, whereas the first path elements are painted first to the canvas and therefore potentially occluded by subsequent elements ([w3-specs](https://www.w3.org/TR/SVG/render.html#RenderingOrder)). For now the rendering order always defaults to [PathOrder.original].
   final PathOrder animationOrder;
 
@@ -169,24 +182,58 @@ class AnimatedDrawing extends StatefulWidget {
   }
 }
 
-/// Base class for _AnimatedDrawingState
+/// Base class for _AnimatedDrawingState and _AnimatedDrawingWithTickerState
 abstract class _AbstractAnimatedDrawingState extends State<AnimatedDrawing> {
+  _AbstractAnimatedDrawingState() {
+    //Set Callbacks
+    this.onFinishAnimationDefault = () {
+      if (this.widget.onFinish != null) {
+        this.widget.onFinish();
+        if (debug.recordFrames) resetFrame(debug);
+      }
+    };
+    this.onFinishAnimation = onFinishAnimationDefault;
+
+    //Called whenever a frame is drawn by the painter
+    this.onFinishFrame = (index) {
+      if (this.widget.onPaint != null && index != -1) {
+        //before first segment (index == 0) is painted
+        int paintedDiff = pathSegments[index].pathIndex - lastPaintedPathIndex;
+        if (paintedDiff > 0) {
+          for (int i = lastPaintedPathIndex + 1;
+              i <= lastPaintedPathIndex + paintedDiff;
+              i++) {
+            this.widget.onPaint(i, this.widget.paths[i]);
+          }
+        }
+        //(paintedDiff < 0) -  reverse animation, ignore for now
+        //(paintedDiff == 0) means no new path is completed (maybe a segment)
+        lastPaintedPathIndex = index;
+      }
+      if (this.controller.status == AnimationStatus.completed) {
+        this.onFinishAnimation();
+      }
+    };
+  }
   AnimationController controller;
   CurvedAnimation curve;
   Curve animationCurve;
   String assetPath;
   PathOrder animationOrder;
-
   DebugOptions debug;
+  int lastPaintedPathIndex = -1;
 
   /// Each [PathSegment] represents a continous Path element of the parsed Svg
   List<PathSegment> pathSegments;
 
   /// Extended callback for update widget
-  VoidCallback onFinishUpdateState;
+  PaintedSegmentCallback onFinishFrame;
+
+  /// Extended callback for update widget
+  VoidCallback onFinishAnimation;
 
   /// Extended callback for update widget - applies for both states
-  VoidCallback onFinishUpdateStateDefault;
+  VoidCallback onFinishAnimationDefault;
 
   /// Ensure that callback fires off only once even widget is rebuild.
   bool onFinishEvoked = false;
@@ -198,18 +245,6 @@ abstract class _AbstractAnimatedDrawingState extends State<AnimatedDrawing> {
     if (this.animationOrder != this.widget.animationOrder) {
       applyPathOrder();
     }
-  }
-
-  void prepareBuild() {
-    this.onFinishUpdateStateDefault = () {
-      if (this.widget.onFinish != null) {
-        this.widget.onFinish();
-        //Here you can do cleanUp for all states
-        //...
-        if (debug.recordFrames) resetFrame(debug);
-      }
-    };
-    this.onFinishUpdateState = onFinishUpdateStateDefault;
   }
 
   @override
@@ -244,7 +279,7 @@ abstract class _AbstractAnimatedDrawingState extends State<AnimatedDrawing> {
   void applyPathOrder() {
     if (this.pathSegments != null) {
       //[A] Persistent paths from _.svg
-      if (this.widget.paths.isEmpty) {
+      if (this.widget.assetPath.isNotEmpty) {
         if (this.widget.animationOrder != null) {
           if (this.widget.lineAnimation == LineAnimation.allAtOnce &&
               this.animationOrder != PathOrders.original) {
@@ -285,7 +320,7 @@ abstract class _AbstractAnimatedDrawingState extends State<AnimatedDrawing> {
             this.pathSegments,
             getCustomDimensions(),
             this.widget.paints,
-            this.onFinishUpdateState,
+            this.onFinishFrame,
             this.debug);
       case LineAnimation.allAtOnce:
         return AllAtOncePainter(
@@ -293,7 +328,7 @@ abstract class _AbstractAnimatedDrawingState extends State<AnimatedDrawing> {
             this.pathSegments,
             getCustomDimensions(),
             this.widget.paints,
-            this.onFinishUpdateState,
+            this.onFinishFrame,
             this.debug);
       default:
         return OneByOnePainter(
@@ -301,7 +336,7 @@ abstract class _AbstractAnimatedDrawingState extends State<AnimatedDrawing> {
             this.pathSegments,
             getCustomDimensions(),
             this.widget.paints,
-            this.onFinishUpdateState,
+            this.onFinishFrame,
             this.debug);
     }
   }
@@ -335,6 +370,14 @@ abstract class _AbstractAnimatedDrawingState extends State<AnimatedDrawing> {
         });
       });
     }
+
+    this.controller.view.addListener(() {
+      setState(() {
+        if (this.controller.status == AnimationStatus.dismissed) {
+          this.lastPaintedPathIndex = -1;
+        }
+      });
+    });
   }
 
   void parsePathSegments() {
@@ -344,6 +387,10 @@ abstract class _AbstractAnimatedDrawingState extends State<AnimatedDrawing> {
         this.widget.assetPath != this.assetPath) {
       parser.loadFromFile(this.widget.assetPath).then((_) {
         setState(() {
+          //raw paths
+          this.widget.paths.clear();
+          this.widget.paths.addAll(parser.getPaths());
+          //corresponding segments
           this.pathSegments = parser.getPathSegments();
           this.assetPath = this.widget.assetPath;
           applyPathOrder();
@@ -365,6 +412,14 @@ abstract class _AbstractAnimatedDrawingState extends State<AnimatedDrawing> {
 
 /// A state implementation which allows controlling the animation through an animation controller when provided.
 class _AnimatedDrawingState extends _AbstractAnimatedDrawingState {
+  _AnimatedDrawingState() : super() {
+    this.onFinishAnimation = () {
+      if (!this.onFinishEvoked) {
+        Timer(Duration(milliseconds: 1), () => this.onFinishAnimationDefault());
+        this.onFinishEvoked = true;
+      }
+    };
+  }
   @override
   void initState() {
     super.initState();
@@ -380,28 +435,28 @@ class _AnimatedDrawingState extends _AbstractAnimatedDrawingState {
 
   @override
   Widget build(BuildContext context) {
-    prepareBuild();
     return getCustomPaint(context);
-  }
-
-  @override
-  void prepareBuild() {
-    super.prepareBuild();
-    this.onFinishUpdateState = () {
-      if (!this.onFinishEvoked) {
-        Timer(
-            Duration(milliseconds: 1),
-            () => this
-                .onFinishUpdateStateDefault()); //See _AnimatedDrawingWithTickerState>>prepareBuild
-        this.onFinishEvoked = true;
-      }
-    };
   }
 }
 
 /// A state implementation with an implemented animation controller to simplify the animation process
 class _AnimatedDrawingWithTickerState extends _AbstractAnimatedDrawingState
     with SingleTickerProviderStateMixin {
+  _AnimatedDrawingWithTickerState() : super() {
+    this.onFinishAnimation = () {
+      //TODO This is a very bad workaround, FIX! Error message when setting state without timer: "Build scheduled during frame. While the widget tree was being built, laid out, and painted, a new frame was scheduled to rebuild the widget tree. This might be because setState() was called from a layout or paint callback. If a change is needed to the widget tree, it should be applied as the tree is being built. Scheduling a change for the subsequent frame instead results in an interface that lags behind by one frame. If this was done to make your build dependent on a size measured at layout time, consider using a LayoutBuilder, CustomSingleChildLayout, or CustomMultiChildLayout. If, on the other hand, the one frame delay is the desired effect, for example because this is an animation, consider scheduling the frame in a post-frame callback using SchedulerBinding.addPostFrameCallback or using an AnimationController to trigger the animation."
+      if (!this.onFinishEvoked) {
+        Timer(Duration(milliseconds: 1), () => this.onFinishAnimationDefault());
+        //Animation is completed when last frame is painted not when animation controller is finished
+        if (this.controller.status == AnimationStatus.dismissed ||
+            this.controller.status == AnimationStatus.completed) {
+          this.finished = true;
+        }
+        Timer(Duration(milliseconds: 1), () => setState(() {}));
+        this.onFinishEvoked = true;
+      }
+    };
+  }
   //Manage state
   bool paused = false;
   bool finished = true;
@@ -430,28 +485,8 @@ class _AnimatedDrawingWithTickerState extends _AbstractAnimatedDrawingState
 
   @override
   Widget build(BuildContext context) {
-    prepareBuild();
     buildAnimation();
     return getCustomPaint(context);
-  }
-
-  @override
-  void prepareBuild() {
-    super.prepareBuild();
-    this.onFinishUpdateState = () {
-      //TODO This is a very bad workaround, FIX! Error message when setting state without timer: "Build scheduled during frame. While the widget tree was being built, laid out, and painted, a new frame was scheduled to rebuild the widget tree. This might be because setState() was called from a layout or paint callback. If a change is needed to the widget tree, it should be applied as the tree is being built. Scheduling a change for the subsequent frame instead results in an interface that lags behind by one frame. If this was done to make your build dependent on a size measured at layout time, consider using a LayoutBuilder, CustomSingleChildLayout, or CustomMultiChildLayout. If, on the other hand, the one frame delay is the desired effect, for example because this is an animation, consider scheduling the frame in a post-frame callback using SchedulerBinding.addPostFrameCallback or using an AnimationController to trigger the animation."
-      if (!this.onFinishEvoked) {
-        Timer(
-            Duration(milliseconds: 1), () => this.onFinishUpdateStateDefault());
-        //Animation is completed when last frame is painted not when animation controller is finished
-        if (this.controller.status == AnimationStatus.dismissed ||
-            this.controller.status == AnimationStatus.completed) {
-          this.finished = true;
-        }
-        Timer(Duration(milliseconds: 1), () => setState(() {}));
-        this.onFinishEvoked = true;
-      }
-    };
   }
 
   Future<void> buildAnimation() async {

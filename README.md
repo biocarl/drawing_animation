@@ -95,6 +95,9 @@ Here is increasingly growing list with all available parameters and their visual
 |                                    | `Curves.elasticOut`             | <img src="https://github.com/biocarl/img/raw/master/drawing_animation/met_elasticOut.gif" width="200px">       |
 |                                    | `Curves.bounceInOut`            | <img src="https://github.com/biocarl/img/raw/master/drawing_animation/met_bounceInOut.gif" width="200px">       |
 |                                    | `Curves.decelerate`             | <img src="https://github.com/biocarl/img/raw/master/drawing_animation/met_decelerate.gif" width="200px">       |
+|                                    | **Other**            |     |
+| `onFinish` <br/><br/> *Callback when one animation cycle is finished. By default every animation repeats infinitely.*|  | |
+| `onPaint` <br/><br/> *Callback when a complete path is painted to the canvas. Returns with the relative index and the Path element itself.*|  | |
 
 ## Supported SVG specifications
    - Only path elements (`<path d="M3m1....">`) are supported for now. I'm currently considering to add [flutter_svg](https://pub.dartlang.org/packages/flutter_svg) as dependency for more complete SVG parsing.
@@ -127,7 +130,6 @@ For example with Inkscape:
   - Provide a way to overwrite color/brush etc. for `AnimatedDrawing.svg` - maybe also over `paints` object?
   - Define a [PathOrder] which maintains each Path and only sorts them relative to each other
   - Improve performance AnimatedDrawing.paths, for every rebuild all provided paths have to be parsed again. Is there a way to check Path-Objects for equality like Keys for widget? Idea: implementing a proxy for Path which creates a unique hash when command evoked
-  - Callback - when Segment/Path is painted, usecase: fill Path when stroke completely drawn
   - Showcase: write "drawing_animation" in different ways + 3 cirlcles + color it and one gif and put it at the top
   - Showcase: Create fractals with L-Systems
   - AnimatedDrawing.paths:

@@ -10,7 +10,8 @@ import 'package:xml/xml.dart' as xml;
 /// Parses a minimal subset of a SVG file and extracts all paths segments.
 class SvgParser {
   /// Each [PathSegment] represents a continuous Path element of the parent Path
-  List<PathSegment> pathSegments = new List();
+  List<PathSegment> _pathSegments = new List();
+  List<Path> _paths = new List();
 
   //TODO do proper parsing and support hex-alpa and RGBA
   Color parseColor(String cStr) {
@@ -29,7 +30,7 @@ class SvgParser {
 
   //Extract segments of each path and create [PathSegment] representation
   void addPathSegments(Path path, int index, double strokeWidth, Color color) {
-    int firstPathSegmentIndex = this.pathSegments.length;
+    int firstPathSegmentIndex = this._pathSegments.length;
     int relativeIndex = 0;
     path.computeMetrics().forEach((pp) {
       PathSegment segment = new PathSegment()
@@ -43,13 +44,13 @@ class SvgParser {
 
       if (strokeWidth != null) segment.strokeWidth = strokeWidth;
 
-      this.pathSegments.add(segment);
+      this._pathSegments.add(segment);
       relativeIndex++;
     });
   }
 
   void loadFromString(String svgString) {
-    pathSegments.clear();
+    this._pathSegments.clear();
     int index = 0; //number of parsed path elements
     var doc = xml.parse(svgString);
     //TODO For now only <path> tags are considered for parsing (add circle, rect, arcs etc.)
@@ -101,6 +102,7 @@ class SvgParser {
           strokeWidth = double.tryParse(strokeWidthElement.value) ?? null;
         }
 
+        this._paths.add(path);
         addPathSegments(path, index, strokeWidth, color);
         index++;
       }
@@ -108,7 +110,9 @@ class SvgParser {
   }
 
   void loadFromPaths(List<Path> paths) {
-    pathSegments.clear();
+    this._pathSegments.clear();
+    this._paths = paths;
+
     int index = 0;
     paths.forEach((p) {
       assert(p != null,
@@ -121,14 +125,19 @@ class SvgParser {
 
   /// Parses Svg from provided asset path
   Future<void> loadFromFile(String file) async {
-    pathSegments.clear();
+    this._pathSegments.clear();
     String svgString = await rootBundle.loadString(file);
     loadFromString(svgString);
   }
 
   /// Returns extracted [PathSegment] elements of parsed Svg
   List<PathSegment> getPathSegments() {
-    return pathSegments;
+    return this._pathSegments;
+  }
+
+  /// Returns extracted [Path] elements of parsed Svg
+  List<Path> getPaths() {
+    return this._paths;
   }
 }
 
