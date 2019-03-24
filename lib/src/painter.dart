@@ -12,6 +12,41 @@ import 'parser.dart';
 import 'path_order.dart';
 import 'types.dart';
 
+/// Paints a list of [PathSegment] to canvas
+class PaintedPainter extends PathPainter {
+  PaintedPainter(
+      Animation<double> animation,
+      List<PathSegment> pathSegments,
+      Size customDimensions,
+      List<Paint> paints,
+      PaintedSegmentCallback onFinishCallback,
+      bool scaleToViewport,
+      DebugOptions debugOptions)
+      : super(animation, pathSegments, customDimensions, paints,
+            onFinishCallback, scaleToViewport, debugOptions);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    canvas = super.paintOrDebug(canvas, size);
+    if (canPaint) {
+      //pathSegments for AllAtOncePainter are always in the order of PathOrders.original
+      pathSegments.forEach((segment) {
+        Paint paint = (this.paints.isNotEmpty)
+            ? this.paints[segment.pathIndex]
+            : (new Paint()
+              ..color = segment.color
+              ..style = PaintingStyle.stroke
+              ..strokeCap = StrokeCap.square
+              ..strokeWidth = segment.strokeWidth);
+        canvas.drawPath(segment.path, paint);
+      });
+
+      //No callback etc. needed
+      // super.onFinish(canvas, size);
+    }
+  }
+}
+
 /// Paints a list of [PathSegment] all-at-once to a canvas
 class AllAtOncePainter extends PathPainter {
   AllAtOncePainter(
@@ -102,6 +137,7 @@ class OneByOnePainter extends PathPainter {
       //[2] Extract subPath of last path which breaks the upperBound
       double subPathLength = upperBound - currentLength;
       PathSegment lastPathSegment = pathSegments[currentIndex];
+
       Path subPath = lastPathSegment.path
           .computeMetrics()
           .first
@@ -142,6 +178,10 @@ class OneByOnePainter extends PathPainter {
         toPaint.remove(lastPathSegment);
         lastPathSegment.path = tmp;
       }
+
+      //TODO Problem: Path drawning is a continous iteration over the length of all segments. To make a callback which fires exactly when path is drawn is therefore not possible (I can only ensure one of the two cases: 1) segment is completely drawn 2) no next segment was started to be drawn yet - For now: 1)
+      // double remainingLength = lastPathSegment.length - subPathLength;
+
       super.onFinish(canvas, size, lastPainted: toPaint.length - 1);
     } else {
       this.paintedSegmentIndex = 0;

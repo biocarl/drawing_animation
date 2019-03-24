@@ -17,7 +17,7 @@ Currently only simple path elements without transforms are supported (see [Suppo
 1. **Add dependency in your `pubspec.yaml`**
 ```yaml
 dependencies:
-  drawing_animation: ^0.0.5
+  drawing_animation: ^0.0.6
 
 ```
 
@@ -98,6 +98,7 @@ Here is increasingly growing list with all available parameters and their visual
 |                                    | **Other**            |     |
 | `onFinish` <br/><br/> *Callback when one animation cycle is finished. By default every animation repeats infinitely.*|  | |
 | `onPaint` <br/><br/> *Callback when a complete path is painted to the canvas. Returns with the relative index and the Path element itself.*|  | |
+| `range` <br/><br/> *Start and stop a animation from a certain moment in time by defining a `AnimationRange` object.*|  | |
 | `scaleToViewport` <br/><br/> *Path objects are scaled to the available viewport while maintaining the aspect ratio. Defaults to true.*|  | |
 
 ## Supported SVG specifications
