@@ -346,8 +346,12 @@ abstract class _AbstractAnimatedDrawingState extends State<AnimatedDrawing> {
   }
 
   PathPainter getPathPainter({isStatic = false}) {
-    //range changed
-    if (this.widget.range != null && this.widget.range != this.range) {
+    //default
+    if (this.widget.range == null) {
+      this._pathSegmentsToPaintAsBackground = List();
+      this._pathSegmentsToAnimate = this.pathSegments;
+      //range changed
+    } else if (this.widget.range != this.range) {
       RangeError.checkValidRange(
           this.widget.range.start,
           this.widget.range.end,
@@ -492,6 +496,7 @@ class _AnimatedDrawingState extends _AbstractAnimatedDrawingState {
       }
     };
   }
+
   @override
   void initState() {
     super.initState();
