@@ -11,7 +11,7 @@
 /// 1. **Add dependency in your `pubspec.yaml`**
 /// ```yaml
 /// dependencies:
-///   drawing_animation: ^0.0.6
+///   drawing_animation: ^0.0.7
 ///
 /// ```
 ///

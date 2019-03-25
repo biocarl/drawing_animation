@@ -1,5 +1,8 @@
 # CHANGES
 
+## 0.0.7
+Fix crash when no range provided
+
 ## 0.0.6
 Define a range for one animation cycle (see `range` field), +Several Fixes
 
