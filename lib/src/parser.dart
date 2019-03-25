@@ -10,8 +10,8 @@ import 'package:xml/xml.dart' as xml;
 /// Parses a minimal subset of a SVG file and extracts all paths segments.
 class SvgParser {
   /// Each [PathSegment] represents a continuous Path element of the parent Path
-  List<PathSegment> _pathSegments = new List();
-  List<Path> _paths = new List();
+  final List<PathSegment> _pathSegments = List<PathSegment>();
+  List<Path> _paths = new List<Path>();
 
   //TODO do proper parsing and support hex-alpa and RGBA
   Color parseColor(String cStr) {

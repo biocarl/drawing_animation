@@ -246,13 +246,13 @@ abstract class _AbstractAnimatedDrawingState extends State<AnimatedDrawing> {
   int lastPaintedPathIndex = -1;
 
   /// Each [PathSegment] represents a continous Path element of the parsed Svg
-  List<PathSegment> pathSegments;
+  List<PathSegment> pathSegments = List<PathSegment>();
 
   ///Represents the subset of [pathSegment] which is drawn in one animation cycle - defined by [range.start] and [range.end]
-  List<PathSegment> _pathSegmentsToAnimate;
+  List<PathSegment> _pathSegmentsToAnimate = List<PathSegment>();
 
   ///Represents the subset of pathSegment which is drawn before the animation starts - defined by < [range.start]
-  List<PathSegment> _pathSegmentsToPaintAsBackground;
+  List<PathSegment> _pathSegmentsToPaintAsBackground = List<PathSegment>();
 
   /// Extended callback for update widget
   PaintedSegmentCallback onFinishFrame;
@@ -310,7 +310,7 @@ abstract class _AbstractAnimatedDrawingState extends State<AnimatedDrawing> {
   }
 
   void applyPathOrder() {
-    if (this.pathSegments != null) {
+    if (this.pathSegments.isNotEmpty) {
       //[A] Persistent paths from _.svg
       if (this.widget.assetPath.isNotEmpty) {
         if (this.widget.animationOrder != null) {
@@ -348,7 +348,6 @@ abstract class _AbstractAnimatedDrawingState extends State<AnimatedDrawing> {
   PathPainter getPathPainter({isStatic = false}) {
     //default
     if (this.widget.range == null) {
-      this._pathSegmentsToPaintAsBackground = List();
       this._pathSegmentsToAnimate = this.pathSegments;
       //range changed
     } else if (this.widget.range != this.range) {
