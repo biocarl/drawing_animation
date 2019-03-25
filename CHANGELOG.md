@@ -1,5 +1,8 @@
 # CHANGES
 
+## 0.0.8
+Fix crash before callback returns from path segment parsing
+
 ## 0.0.7
 Fix crash when no range provided
 
