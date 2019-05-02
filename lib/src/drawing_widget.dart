@@ -293,7 +293,7 @@ abstract class _AbstractAnimatedDrawingState extends State<AnimatedDrawing> {
 
   Animation<double> getAnimation() {
     Animation<double> animation;
-    if (!this.widget.run) {
+    if (this.widget.run == null || !this.widget.run) {
       animation = this.controller;
     } else if (this.curve != null &&
         this.animationCurve == widget.animationCurve) {

@@ -62,6 +62,7 @@ class SvgDrawingWithCustomControllerState
   }
 
   void _startAnimation() {
+    print('uhu');
     if (_running) {
       _controller.stop();
     } else {
