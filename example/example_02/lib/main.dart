@@ -62,7 +62,6 @@ class SvgDrawingWithCustomControllerState
   }
 
   void _startAnimation() {
-    print('uhu');
     if (_running) {
       _controller.stop();
     } else {
@@ -76,11 +75,11 @@ class SvgDrawingWithCustomControllerState
   Widget build(BuildContext context) {
     return Container(
         decoration: new BoxDecoration(
-          color: Colors.purple,
+          color: Colors.green,
         ),
         child: GestureDetector(
             onTap: () => _startAnimation(),
-
+            behavior:HitTestBehavior.translucent,
             //AnimatedDrawing with a custom controller
             child: AnimatedDrawing.svg(
               this.widget.assetName,
