@@ -8,8 +8,6 @@
 
 The rendering library exposes a central widget called `AnimatedDrawing` which allows to render SVG paths (via `AnimatedDrawing.svg`) or Flutter Path objects (via `AnimatedDrawing.paths`) in a drawing like fashion.
 
-:construction: **This library is still at early-stage development and might be subject to breaking API changes!!!** :construction:
-
 ## Getting Started  - AnimatedDrawing.svg
 To get started with the `drawing_animation` package you need a valid Svg file.
 Currently only simple path elements without transforms are supported (see [Supported SVG specifications](https://github.com/biocarl/drawing_animation#supported-svg-specifications))
@@ -17,7 +15,7 @@ Currently only simple path elements without transforms are supported (see [Suppo
 1. **Add dependency in your `pubspec.yaml`**
 ```yaml
 dependencies:
-  drawing_animation: ^0.0.9
+  drawing_animation: ^0.1.0
 
 ```
 

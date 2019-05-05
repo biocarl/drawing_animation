@@ -79,7 +79,7 @@ class SvgDrawingWithCustomControllerState
         ),
         child: GestureDetector(
             onTap: () => _startAnimation(),
-            behavior:HitTestBehavior.translucent,
+            behavior: HitTestBehavior.translucent,
             //AnimatedDrawing with a custom controller
             child: AnimatedDrawing.svg(
               this.widget.assetName,
