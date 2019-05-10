@@ -29,6 +29,7 @@ FORMAT
 DEPLOY
 img/
 example/example_0/
+example/example_03_web/
 
 
 #Publish
