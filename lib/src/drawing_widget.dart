@@ -120,24 +120,22 @@ class AnimatedDrawing extends StatefulWidget {
   /// The corresponding order of Paint objects always orients itself on the [PathOrder.original], even if the [PathOrder] was changed.
   final List<Paint> paints;
 
-  //_AnimatedDrawingState
   /// When a animation controller is specified, the progress of the animation can be controlled externally.
   ///
   /// The visibility of the rendered SVG depends on the current controller.value but also on the type of [LineAnimation]. When no controller is provided the progress of the animation is controlled via the fields [run], [duration].
   final AnimationController controller;
 
-  //_AnimatedDrawingWithTickerState
   /// Easing curves are used to adjust the rate of change of an animation over time, allowing them to speed up and slow down, rather than moving at a constant rate.
   ///
   /// When the animation is controlled via an external [AnimationController] object in [controller], the curve is applied to that controller respectively.
   final Curve animationCurve;
 
-  /// Callback when one animation cycle is finished.
+  /// Callback is evoked after one animation cycle has finished.
   ///
   /// By default every animation repeats infinitely. For running an animation only once you can use this callback to set [run] to false after the first animation cycle completed. This field is ignored when [controller] is provided and the animation is set to [controller.repeat()].
   final VoidCallback onFinish;
 
-  /// Callback when a complete path is painted to the canvas.
+  /// Callback is evoked when a complete path is painted to the canvas.
   ///
   /// Returns with the relative index and the Path element itself.
   /// If the animation reverses (for examples when applying animation curves) the callback might fire several times for the same path.
@@ -148,13 +146,14 @@ class AnimatedDrawing extends StatefulWidget {
   ///Denotes the order in which the path elements are drawn to canvas when [lineAnimation] is set to [LineAnimation.oneByOne]. When no [animationOrder] is specified it defaults to [PathOrder.original]. Do not confuse this option with the default rendering order, whereas the first path elements are painted first to the canvas and therefore potentially occluded by subsequent elements ([w3-specs](https://www.w3.org/TR/SVG/render.html#RenderingOrder)). For now the rendering order always defaults to [PathOrder.original].
   final PathOrder animationOrder;
 
-  //For _AnimatedDrawingWithTickerState
-  /// When [run] is set to true the first animation cycle is triggered.
+  /// When no custom animation controller is provided the state of the animation can be controlled via [run].
+  ///
+  /// Is [run] set to true the first animation cycle is triggered.
   ///
   /// By default every animation repeats infinitely. For running an animation only once you can use the callback [onFinish] to set [run] to false after the first cycle completed. When [run] is set to false while the animation is still running, the animation is stopped at that point in time. If [run] is set to true again the animation is reset to the beginning. To continue the animation at the previous value you might consider using [controller].
   final bool run;
 
-  /// Denotes the duration of the animation if no [controller] is specified.
+  /// When no custom animation controller is provided the duration of the animation can be controlled via [duration].
   final Duration duration;
 
   /// When [width] is specified parent constraints are ignored. When only [width] or [height] is specified the original aspect ratio is preserved.
@@ -169,6 +168,8 @@ class AnimatedDrawing extends StatefulWidget {
   final AnimationRange range;
 
   /// Specifies in which way the path elements are drawn to the canvas.
+  ///
+  /// See [LineAnimation.allAtOnce] and [LineAnimation.oneByOne]
   final LineAnimation lineAnimation;
 
   /// Denotes if the path elements should be scaled in order to fit into viewport.
@@ -180,14 +181,12 @@ class AnimatedDrawing extends StatefulWidget {
   final DebugOptions debug;
 
 
-
   @override
   AbstractAnimatedDrawingState createState() {
     if (this.controller != null) {
       return new AnimatedDrawingState();
-    } else {
-      return new AnimatedDrawingWithTickerState();
     }
+    return new AnimatedDrawingWithTickerState();
   }
 
   void assertAnimationParameters() {
@@ -196,5 +195,4 @@ class AnimatedDrawing extends StatefulWidget {
   }
 
 }
-
 
