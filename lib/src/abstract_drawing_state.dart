@@ -8,44 +8,11 @@ import 'painter.dart';
 import 'parser.dart';
 import 'range.dart';
 import 'path_order.dart';
-import 'types.dart';
 
 /// Base class for _AnimatedDrawingState and _AnimatedDrawingWithTickerState
 abstract class AbstractAnimatedDrawingState extends State<AnimatedDrawing> {
   AbstractAnimatedDrawingState() {
-    //Set Callbacks
-    this.onFinishAnimationDefault = () {
-      if (this.widget.onFinish != null) {
-        this.widget.onFinish();
-        if (debug.recordFrames) resetFrame(debug);
-      }
-    };
     this.onFinishAnimation = onFinishAnimationDefault;
-
-    //Called whenever a frame is drawn by the painter
-    this.onFinishFrame = (index) {
-      if (this.widget.onPaint != null && index != -1) {
-        //before first segment (index == 0) is painted
-        int paintedDiff = pathSegments[index].pathIndex - lastPaintedPathIndex;
-        if (paintedDiff > 0) {
-          for (int i = lastPaintedPathIndex + 1;
-              i <= lastPaintedPathIndex + paintedDiff;
-              i++) {
-            SchedulerBinding.instance.addPostFrameCallback((_) {
-              setState(() {
-                this.widget.onPaint(i, this.widget.paths[i]);
-              });
-            });
-          }
-        }
-        //(paintedDiff < 0) -  reverse animation, ignore for now
-        //(paintedDiff == 0) means no new path is completed (maybe a segment)
-        lastPaintedPathIndex = index;
-      }
-      if (this.controller.status == AnimationStatus.completed) {
-        this.onFinishAnimation();
-      }
-    };
   }
   AnimationController controller;
   CurvedAnimation curve;
@@ -56,26 +23,59 @@ abstract class AbstractAnimatedDrawingState extends State<AnimatedDrawing> {
   DebugOptions debug;
   int lastPaintedPathIndex = -1;
 
-  /// Each [PathSegment] represents a continous Path element of the parsed Svg
   List<PathSegment> pathSegments = List<PathSegment>();
+  List<PathSegment> pathSegmentsToAnimate =
+      List<PathSegment>(); //defined by [range.start] and [range.end]
+  List<PathSegment> pathSegmentsToPaintAsBackground =
+      List<PathSegment>(); //defined by < [range.start]
 
-  ///Represents the subset of [pathSegment] which is drawn in one animation cycle - defined by [range.start] and [range.end]
-  List<PathSegment> _pathSegmentsToAnimate = List<PathSegment>();
-
-  ///Represents the subset of pathSegment which is drawn before the animation starts - defined by < [range.start]
-  List<PathSegment> _pathSegmentsToPaintAsBackground = List<PathSegment>();
-
-  /// Extended callback for update widget
-  PaintedSegmentCallback onFinishFrame;
-
-  /// Extended callback for update widget
   VoidCallback onFinishAnimation;
-
-  /// Extended callback for update widget - applies for both states
-  VoidCallback onFinishAnimationDefault;
 
   /// Ensure that callback fires off only once even widget is rebuild.
   bool onFinishEvoked = false;
+
+  void onFinishAnimationDefault() {
+    if (this.widget.onFinish != null) {
+      this.widget.onFinish();
+      if (debug.recordFrames) resetFrame(debug);
+    }
+  }
+
+  void onFinishFrame(int currentPaintedPathIndex) {
+    if (newPathPainted(currentPaintedPathIndex)) {
+      evokeOnPaintForNewlyPaintedPaths(currentPaintedPathIndex);
+    }
+    if (this.controller.status == AnimationStatus.completed) {
+      this.onFinishAnimation();
+    }
+  }
+
+  void evokeOnPaintForNewlyPaintedPaths(int currentPaintedPathIndex) {
+    final int paintedPaths = pathSegments[currentPaintedPathIndex].pathIndex -
+        lastPaintedPathIndex; //TODO you should iterate over the indices of the sorted path segments not the original ones
+    for (int i = lastPaintedPathIndex + 1;
+        i <= lastPaintedPathIndex + paintedPaths;
+        i++) {
+      evokeOnPaintForPath(i);
+    }
+    lastPaintedPathIndex = currentPaintedPathIndex;
+  }
+
+  void evokeOnPaintForPath(int i) {
+    //Only evoked in next frame
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      setState(() {
+        this.widget.onPaint(i, this.widget.paths[i]);
+      });
+    });
+  }
+
+  bool newPathPainted(int currentPaintedPathIndex) {
+    return this.widget.onPaint != null &&
+        currentPaintedPathIndex != -1 &&
+        pathSegments[currentPaintedPathIndex].pathIndex - lastPaintedPathIndex >
+            0;
+  }
 
   @override
   void didUpdateWidget(AnimatedDrawing oldWidget) {
@@ -90,7 +90,6 @@ abstract class AbstractAnimatedDrawingState extends State<AnimatedDrawing> {
   void initState() {
     super.initState();
     parsePathSegments();
-    // TODO add curves on updateWidget...
     if (this.controller != null && widget.animationCurve != null) {
       this.curve = CurvedAnimation(
           parent: this.controller, curve: this.widget.animationCurve);
@@ -159,7 +158,7 @@ abstract class AbstractAnimatedDrawingState extends State<AnimatedDrawing> {
   PathPainter getPathPainter({isStatic = false}) {
     //default
     if (this.widget.range == null) {
-      this._pathSegmentsToAnimate = this.pathSegments;
+      this.pathSegmentsToAnimate = this.pathSegments;
       //range changed
     } else if (this.widget.range != this.range) {
       RangeError.checkValidRange(
@@ -171,14 +170,14 @@ abstract class AbstractAnimatedDrawingState extends State<AnimatedDrawing> {
           "The provided range is invalid for the provided number of paths.");
       //PaintedPainter - draws paths in background before animation starts
       if (isStatic) {
-        this._pathSegmentsToPaintAsBackground = this
+        this.pathSegmentsToPaintAsBackground = this
             .pathSegments
             .where((x) => x.pathIndex < this.widget.range.start)
             .toList();
         this.range = this.widget.range;
       } else {
         //Painter which draw paths gradually
-        this._pathSegmentsToAnimate = this
+        this.pathSegmentsToAnimate = this
             .pathSegments
             .where((x) => (x.pathIndex >= this.widget.range.start &&
                 x.pathIndex <= this.widget.range.end))
@@ -187,10 +186,10 @@ abstract class AbstractAnimatedDrawingState extends State<AnimatedDrawing> {
     }
 
     if (isStatic) {
-      return (this._pathSegmentsToPaintAsBackground.isNotEmpty)
+      return (this.pathSegmentsToPaintAsBackground.isNotEmpty)
           ? PaintedPainter(
               getAnimation(),
-              _pathSegmentsToPaintAsBackground,
+              pathSegmentsToPaintAsBackground,
               getCustomDimensions(),
               this.widget.paints,
               this.onFinishFrame,
@@ -198,12 +197,12 @@ abstract class AbstractAnimatedDrawingState extends State<AnimatedDrawing> {
               this.debug)
           : null;
     } else {
-      if (this._pathSegmentsToAnimate.isNotEmpty) {
+      if (this.pathSegmentsToAnimate.isNotEmpty) {
         switch (this.widget.lineAnimation) {
           case LineAnimation.oneByOne:
             return OneByOnePainter(
                 getAnimation(),
-                this._pathSegmentsToAnimate,
+                this.pathSegmentsToAnimate,
                 getCustomDimensions(),
                 this.widget.paints,
                 this.onFinishFrame,
@@ -212,7 +211,7 @@ abstract class AbstractAnimatedDrawingState extends State<AnimatedDrawing> {
           case LineAnimation.allAtOnce:
             return AllAtOncePainter(
                 getAnimation(),
-                this._pathSegmentsToAnimate,
+                this.pathSegmentsToAnimate,
                 getCustomDimensions(),
                 this.widget.paints,
                 this.onFinishFrame,
