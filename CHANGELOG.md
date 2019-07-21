@@ -1,5 +1,8 @@
 # CHANGES
 
+## 0.1.2
+* First part of some major refactorings
+
 ## 0.1.0
 * Migration to stable version
 
