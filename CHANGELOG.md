@@ -1,5 +1,8 @@
 # CHANGES
 
+## 0.1.3
+* Fix color problem
+
 ## 0.1.2
 * First part of some major refactorings
 
