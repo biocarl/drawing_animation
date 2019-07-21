@@ -80,7 +80,6 @@ abstract class AbstractAnimatedDrawingState extends State<AnimatedDrawing> {
   @override
   void didUpdateWidget(AnimatedDrawing oldWidget) {
     super.didUpdateWidget(oldWidget);
-    //Update fields which are valid for both State classes
     if (this.animationOrder != this.widget.animationOrder) {
       applyPathOrder();
     }
@@ -89,18 +88,26 @@ abstract class AbstractAnimatedDrawingState extends State<AnimatedDrawing> {
   @override
   void initState() {
     super.initState();
-    parsePathSegments();
-    if (this.controller != null && widget.animationCurve != null) {
-      this.curve = CurvedAnimation(
-          parent: this.controller, curve: this.widget.animationCurve);
-      this.animationCurve = widget.animationCurve;
-    }
+    updatePathData();
+    applyAnimationCurve();
+    applyDebugOptions();
+  }
 
+  void applyDebugOptions() {
     //If DebugOptions changes a hot restart is needed.
     this.debug = this.widget.debug;
     this.debug ??= DebugOptions();
   }
 
+  void applyAnimationCurve() {
+    if (this.controller != null && widget.animationCurve != null) {
+      this.curve = CurvedAnimation(
+          parent: this.controller, curve: this.widget.animationCurve);
+      this.animationCurve = widget.animationCurve;
+    }
+  }
+
+  //TODO Refactor
   Animation<double> getAnimation() {
     Animation<double> animation;
     if (this.widget.run == null || !this.widget.run) {
@@ -120,109 +127,89 @@ abstract class AbstractAnimatedDrawingState extends State<AnimatedDrawing> {
   }
 
   void applyPathOrder() {
-    if (this.pathSegments.isNotEmpty) {
-      //[A] Persistent paths from _.svg
-      if (this.widget.assetPath.isNotEmpty) {
-        if (this.widget.animationOrder != null) {
-          if (this.widget.lineAnimation == LineAnimation.allAtOnce &&
-              this.animationOrder != PathOrders.original) {
-            // always keep paths for allAtOnce animation in original path order so we do not sort for the correct PaintOrder later on (which is pretty expensive for AllAtOncePainter)
-            this
-                .pathSegments
-                .sort(Extractor.getComparator(PathOrders.original));
-            this.animationOrder = PathOrders.original;
-            //Apply new PathOrder
-          } else if (this.widget.animationOrder != this.animationOrder) {
-            this
-                .pathSegments
-                .sort(Extractor.getComparator(this.widget.animationOrder));
-            this.animationOrder = this.widget.animationOrder;
-          }
-          //Restore original order when field was nulled.
-        } else if (this.animationOrder != null &&
-            this.animationOrder != PathOrders.original) {
-          this.pathSegments.sort(Extractor.getComparator(PathOrders.original));
-          this.animationOrder = PathOrders.original;
-        }
-        //[B] Experimental: Tmp paths from _.paths: We always have to resort - TODO this easily becomes a performance issue when a parent animation controller calls this 60 fps
+    if (this.pathSegments.isEmpty) return;
+
+    setState(() {
+      if (checkIfDefaultOrderSortingRequired()) {
+        this.pathSegments.sort(Extractor.getComparator(PathOrders.original));
+        this.animationOrder = PathOrders.original;
+        return;
       }
-      if (this.widget.animationOrder != null &&
-          this.widget.lineAnimation != LineAnimation.allAtOnce) {
+
+      if (this.widget.animationOrder != this.animationOrder) {
         this
             .pathSegments
             .sort(Extractor.getComparator(this.widget.animationOrder));
+        this.animationOrder = this.widget.animationOrder;
       }
-    }
+    });
   }
 
-  PathPainter getPathPainter({isStatic = false}) {
-    //default
+  PathPainter buildForegroundPainter() {
+    if (pathSegmentsToAnimate.isEmpty) return null;
+    PathPainterBuilder builder = preparePathPainterBuilder(this.widget.lineAnimation);
+    builder.setPathSegments(this.pathSegmentsToAnimate);
+    return builder.build();
+  }
+
+  PathPainter buildBackgroundPainter() {
+    if (pathSegmentsToPaintAsBackground.isEmpty) return null;
+    PathPainterBuilder builder = preparePathPainterBuilder();
+    builder.setPathSegments(this.pathSegmentsToPaintAsBackground);
+    return builder.build();
+  }
+
+  PathPainterBuilder preparePathPainterBuilder([LineAnimation lineAnimation]) {
+    PathPainterBuilder builder = PathPainterBuilder(lineAnimation);
+    builder.setAnimation(getAnimation());
+    builder.setCustomDimensions(getCustomDimensions());
+    builder.setPaints(this.widget.paints);
+    builder.setOnFinishFrame(this.onFinishFrame);
+    builder.setScaleToViewport(this.widget.scaleToViewport);
+    builder.setDebugOptions(this.debug);
+    return builder;
+  }
+
+  //TODO refactor to be range not null
+  void assignPathSegmentsToPainters() {
+    if (this.pathSegments.isEmpty) return;
+
     if (this.widget.range == null) {
       this.pathSegmentsToAnimate = this.pathSegments;
-      //range changed
-    } else if (this.widget.range != this.range) {
-      RangeError.checkValidRange(
-          this.widget.range.start,
-          this.widget.range.end,
-          this.widget.paths.length - 1,
-          "start",
-          "end",
-          "The provided range is invalid for the provided number of paths.");
-      //PaintedPainter - draws paths in background before animation starts
-      if (isStatic) {
-        this.pathSegmentsToPaintAsBackground = this
-            .pathSegments
-            .where((x) => x.pathIndex < this.widget.range.start)
-            .toList();
-        this.range = this.widget.range;
-      } else {
-        //Painter which draw paths gradually
-        this.pathSegmentsToAnimate = this
-            .pathSegments
-            .where((x) => (x.pathIndex >= this.widget.range.start &&
-                x.pathIndex <= this.widget.range.end))
-            .toList();
-      }
+      this.range = null;
+      this.pathSegmentsToPaintAsBackground.clear();
+      return;
     }
 
-    if (isStatic) {
-      return (this.pathSegmentsToPaintAsBackground.isNotEmpty)
-          ? PaintedPainter(
-              getAnimation(),
-              pathSegmentsToPaintAsBackground,
-              getCustomDimensions(),
-              this.widget.paints,
-              this.onFinishFrame,
-              this.widget.scaleToViewport,
-              this.debug)
-          : null;
-    } else {
-      if (this.pathSegmentsToAnimate.isNotEmpty) {
-        switch (this.widget.lineAnimation) {
-          case LineAnimation.oneByOne:
-            return OneByOnePainter(
-                getAnimation(),
-                this.pathSegmentsToAnimate,
-                getCustomDimensions(),
-                this.widget.paints,
-                this.onFinishFrame,
-                this.widget.scaleToViewport,
-                this.debug);
-          case LineAnimation.allAtOnce:
-            return AllAtOncePainter(
-                getAnimation(),
-                this.pathSegmentsToAnimate,
-                getCustomDimensions(),
-                this.widget.paints,
-                this.onFinishFrame,
-                this.widget.scaleToViewport,
-                this.debug);
-        }
-      }
+    if (this.widget.range != this.range) {
+      checkValidRange();
+
+      this.pathSegmentsToPaintAsBackground = this
+          .pathSegments
+          .where((x) => x.pathIndex < this.widget.range.start)
+          .toList();
+
+      this.pathSegmentsToAnimate = this
+          .pathSegments
+          .where((x) => (x.pathIndex >= this.widget.range.start &&
+              x.pathIndex <= this.widget.range.end))
+          .toList();
+
+      this.range = this.widget.range;
     }
-    return null;
   }
 
+  void checkValidRange() {
+    RangeError.checkValidRange(
+        this.widget.range.start,
+        this.widget.range.end,
+        this.widget.paths.length - 1,
+        "start",
+        "end",
+        "The provided range is invalid for the provided number of paths.");
+  }
+
+  // TODO Refactor
   Size getCustomDimensions() {
     if (widget.height != null || widget.width != null) {
       return Size(
@@ -234,11 +221,11 @@ abstract class AbstractAnimatedDrawingState extends State<AnimatedDrawing> {
     }
   }
 
-  CustomPaint getCustomPaint(BuildContext context) {
-    parsePathSegments();
+  CustomPaint createCustomPaint(BuildContext context) {
+    updatePathData(); //TODO Refactor - SRP broken (see method name)
     return new CustomPaint(
-        foregroundPainter: getPathPainter(),
-        painter: getPathPainter(isStatic: true),
+        foregroundPainter: buildForegroundPainter(),
+        painter: buildBackgroundPainter(),
         size: Size.copy(MediaQuery.of(context).size));
   }
 
@@ -263,32 +250,109 @@ abstract class AbstractAnimatedDrawingState extends State<AnimatedDrawing> {
     });
   }
 
-  void parsePathSegments() {
-    SvgParser parser = new SvgParser();
-    //AnimatedDrawing.svg
-    if (this.widget.assetPath.isNotEmpty &&
-        this.widget.assetPath != this.assetPath) {
-      parser.loadFromFile(this.widget.assetPath).then((_) {
-        setState(() {
-          //raw paths
-          this.widget.paths.clear();
-          this.widget.paths.addAll(parser.getPaths());
-          //corresponding segments
-          this.pathSegments = parser.getPathSegments();
-          this.assetPath = this.widget.assetPath;
-          applyPathOrder();
-        });
-      });
+  void updatePathData() {
+    parsePathData();
+    applyPathOrder();
+    assignPathSegmentsToPainters();
+  }
 
-      //AnimatedDrawing.paths
-    } else if (this.widget.paths.isNotEmpty) {
-      parser.loadFromPaths(this
-          .widget
-          .paths); //Path object are parsed completely upon every state change
-      setState(() {
-        this.pathSegments = parser.getPathSegments();
-        applyPathOrder();
-      });
+  void parsePathData() {
+    SvgParser parser = new SvgParser();
+    if (svgAssetProvided()) {
+      parseFromSvgAsset(parser);
+    } else if (pathsProvided()) {
+      parseFromPaths(parser);
     }
+  }
+
+  void parseFromPaths(SvgParser parser) {
+    parser.loadFromPaths(this
+        .widget
+        .paths); //Path object are parsed completely upon every state change
+    setState(() {
+      this.pathSegments = parser.getPathSegments();
+    });
+  }
+
+  bool pathsProvided() => this.widget.paths.isNotEmpty;
+
+  bool svgAssetProvided() =>
+      this.widget.assetPath.isNotEmpty &&
+      this.widget.assetPath != this.assetPath;
+
+  void parseFromSvgAsset(SvgParser parser) {
+    parser.loadFromFile(this.widget.assetPath).then((_) {
+      setState(() {
+        //raw paths
+        this.widget.paths.clear();
+        this.widget.paths.addAll(parser.getPaths());
+        //corresponding segments
+        this.pathSegments = parser.getPathSegments();
+        this.assetPath = this.widget.assetPath;
+      });
+    });
+  }
+
+  bool checkIfDefaultOrderSortingRequired() {
+    // always keep paths for allAtOnce animation in original path order so we do not sort for the correct PaintOrder later on (which is pretty expensive for AllAtOncePainter)
+    return this.widget.lineAnimation == LineAnimation.allAtOnce &&
+        this.animationOrder != PathOrders.original;
+  }
+}
+
+class PathPainterBuilder {
+  PathPainterBuilder([LineAnimation lineAnimation]) {
+    this.lineAnimation = lineAnimation;
+  }
+  List<Paint> paints;
+  void Function(int currentPaintedPathIndex) onFinishFrame;
+  bool scaleToViewport;
+  DebugOptions debugOptions;
+  List<PathSegment> pathSegments;
+  LineAnimation lineAnimation;
+  Animation<double> animation;
+  Size customDimensions;
+
+  PathPainter build() {
+    switch (lineAnimation) {
+      case LineAnimation.oneByOne:
+        return OneByOnePainter(animation, pathSegments, customDimensions,
+            paints, onFinishFrame, scaleToViewport, debugOptions);
+      case LineAnimation.allAtOnce:
+        return AllAtOncePainter(animation, pathSegments, customDimensions,
+            paints, onFinishFrame, scaleToViewport, debugOptions);
+      default:
+        return PaintedPainter(animation, pathSegments, customDimensions, paints,
+            onFinishFrame, scaleToViewport, debugOptions);
+    }
+  }
+
+  void setAnimation(Animation<double> animation) {
+    this.animation = animation;
+  }
+
+  void setCustomDimensions(Size customDimensions) {
+    this.customDimensions = customDimensions;
+  }
+
+  void setPaints(List<Paint> paints) {
+    this.paints = paints;
+  }
+
+  void setOnFinishFrame(
+      void Function(int currentPaintedPathIndex) onFinishFrame) {
+    this.onFinishFrame = onFinishFrame;
+  }
+
+  void setScaleToViewport(bool scaleToViewport) {
+    this.scaleToViewport = scaleToViewport;
+  }
+
+  void setDebugOptions(DebugOptions debug) {
+    this.debugOptions = debug;
+  }
+
+  void setPathSegments(List<PathSegment> pathSegments) {
+    this.pathSegments = pathSegments;
   }
 }
