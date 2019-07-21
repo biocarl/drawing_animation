@@ -20,7 +20,7 @@ class AnimatedDrawingState extends AbstractAnimatedDrawingState {
   void initState() {
     super.initState();
     this.controller = this.widget.controller;
-    listenToController();
+    addListenersToAnimationController();
   }
 
   @override

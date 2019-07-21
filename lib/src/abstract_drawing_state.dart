@@ -15,6 +15,7 @@ abstract class AbstractAnimatedDrawingState extends State<AnimatedDrawing> {
   AbstractAnimatedDrawingState() {
     this.onFinishAnimation = onFinishAnimationDefault;
   }
+
   AnimationController controller;
   CurvedAnimation curve;
   Curve animationCurve;
@@ -230,8 +231,8 @@ abstract class AbstractAnimatedDrawingState extends State<AnimatedDrawing> {
         size: Size.copy(MediaQuery.of(context).size));
   }
 
-  //Call this after controller is defined in child classes
-  void listenToController() {
+  // TODO Refactor
+  void addListenersToAnimationController() {
     if (this.debug.recordFrames) {
       this.controller.view.addListener(() {
         setState(() {

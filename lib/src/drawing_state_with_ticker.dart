@@ -40,7 +40,7 @@ class AnimatedDrawingWithTickerState extends AbstractAnimatedDrawingState
       vsync: this,
       duration: widget.duration,
     );
-    listenToController();
+    addListenersToAnimationController();
   }
 
   @override
