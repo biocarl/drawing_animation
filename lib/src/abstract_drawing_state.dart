@@ -262,6 +262,9 @@ abstract class AbstractAnimatedDrawingState extends State<AnimatedDrawing> {
   void parsePathData() {
     SvgParser parser = new SvgParser();
     if (svgAssetProvided()) {
+      if(this.widget.assetPath == this.assetPath)
+        return;
+
       parseFromSvgAsset(parser);
     } else if (pathsProvided()) {
       parseFromPaths(parser);
@@ -279,9 +282,7 @@ abstract class AbstractAnimatedDrawingState extends State<AnimatedDrawing> {
 
   bool pathsProvided() => this.widget.paths.isNotEmpty;
 
-  bool svgAssetProvided() =>
-      this.widget.assetPath.isNotEmpty &&
-      this.widget.assetPath != this.assetPath;
+  bool svgAssetProvided() => this.widget.assetPath.isNotEmpty;
 
   void parseFromSvgAsset(SvgParser parser) {
     parser.loadFromFile(this.widget.assetPath).then((_) {
