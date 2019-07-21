@@ -52,7 +52,7 @@ class AnimatedDrawingWithTickerState extends AbstractAnimatedDrawingState
   @override
   Widget build(BuildContext context) {
     buildAnimation();
-    return getCustomPaint(context);
+    return createCustomPaint(context);
   }
 
 //

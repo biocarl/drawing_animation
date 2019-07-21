@@ -31,6 +31,6 @@ class AnimatedDrawingState extends AbstractAnimatedDrawingState {
 
   @override
   Widget build(BuildContext context) {
-    return getCustomPaint(context);
+    return createCustomPaint(context);
   }
 }

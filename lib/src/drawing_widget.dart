@@ -190,8 +190,8 @@ class AnimatedDrawing extends StatefulWidget {
   }
 
   void assertAnimationParameters() {
-    assert(!(this.controller == null &&
-        (this.run == null || this.duration == null)));
+    assert(!(this.controller == null && (this.run == null || this.duration == null)));
+    assert(this.animationOrder != null);
   }
 
 }
