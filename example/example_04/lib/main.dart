@@ -84,8 +84,8 @@ class _MyHomePageState extends State<MyHomePage> {
                 lineAnimation: LineAnimation.oneByOne,
                 animationCurve: Curves.linear,
                 onFinish: () => setState(() {
-                      this.run = false;
-                    }),
+                  this.run = false;
+                }),
                 //Uncomment this to write each frame to file
                 // debug: DebugOptions(
                 //   fileName: this.projectName,

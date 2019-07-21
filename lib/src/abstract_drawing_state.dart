@@ -149,7 +149,8 @@ abstract class AbstractAnimatedDrawingState extends State<AnimatedDrawing> {
 
   PathPainter buildForegroundPainter() {
     if (pathSegmentsToAnimate.isEmpty) return null;
-    PathPainterBuilder builder = preparePathPainterBuilder(this.widget.lineAnimation);
+    PathPainterBuilder builder =
+        preparePathPainterBuilder(this.widget.lineAnimation);
     builder.setPathSegments(this.pathSegmentsToAnimate);
     return builder.build();
   }
@@ -297,7 +298,7 @@ abstract class AbstractAnimatedDrawingState extends State<AnimatedDrawing> {
 
   bool checkIfDefaultOrderSortingRequired() {
     // always keep paths for allAtOnce animation in original path order so we do not sort for the correct PaintOrder later on (which is pretty expensive for AllAtOncePainter)
-    return this.widget.lineAnimation == LineAnimation.allAtOnce &&
-        this.animationOrder != PathOrders.original;
+    final bool defaultSortingWhenNoOrderDefined = this.widget.lineAnimation == LineAnimation.allAtOnce && this.animationOrder != PathOrders.original;
+    return defaultSortingWhenNoOrderDefined || this.widget.lineAnimation == null;
   }
 }

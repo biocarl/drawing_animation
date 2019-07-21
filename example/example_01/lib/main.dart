@@ -51,8 +51,8 @@ class _MyHomePageState extends State<MyHomePage> {
           lineAnimation: LineAnimation.oneByOne,
           animationCurve: Curves.linear,
           onFinish: () => setState(() {
-                this.run = false;
-              }),
+            this.run = false;
+          }),
         )),
 
         //Simplfied AnimatedDrawing parsing Path objects from an Svg asset
@@ -64,8 +64,8 @@ class _MyHomePageState extends State<MyHomePage> {
           lineAnimation: LineAnimation.oneByOne,
           animationCurve: Curves.linear,
           onFinish: () => setState(() {
-                this.run = false;
-              }),
+            this.run = false;
+          }),
         )),
       ])),
     );

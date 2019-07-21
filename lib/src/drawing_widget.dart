@@ -50,8 +50,9 @@ class AnimatedDrawing extends StatefulWidget {
     this.lineAnimation = LineAnimation.oneByOne,
     this.scaleToViewport = true,
     this.debug,
-  })  : paths = [],
-        paints = [] {
+  })  : this.paths = [],
+        this.paints = []
+        {
     assertAnimationParameters();
     assert(this.assetPath.isNotEmpty);
   }
@@ -97,7 +98,8 @@ class AnimatedDrawing extends StatefulWidget {
     this.lineAnimation = LineAnimation.oneByOne,
     this.scaleToViewport = true,
     this.debug,
-  }) : this.assetPath = '' {
+  }) : this.assetPath = ''
+  {
     assertAnimationParameters();
     assert(this.paths.isNotEmpty);
     if (this.paints.isNotEmpty) assert(this.paints.length == this.paths.length);
@@ -180,7 +182,6 @@ class AnimatedDrawing extends StatefulWidget {
   /// For debugging, not for production use.
   final DebugOptions debug;
 
-
   @override
   AbstractAnimatedDrawingState createState() {
     if (this.controller != null) {
@@ -189,10 +190,8 @@ class AnimatedDrawing extends StatefulWidget {
     return new AnimatedDrawingWithTickerState();
   }
 
+  // TODO Refactor SRP
   void assertAnimationParameters() {
     assert(!(this.controller == null && (this.run == null || this.duration == null)));
-    assert(this.animationOrder != null);
   }
-
 }
-
