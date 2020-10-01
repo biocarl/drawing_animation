@@ -141,3 +141,5 @@ For example with Inkscape:
 Thank you to [maxwellito](https://github.com/maxwellito) for his [vivus project](https://github.com/maxwellito/vivus) which served me as initial inspiration for this library. Thank you also to [dnfield](https://github.com/dnfield) for the [path_parsing](https://github.com/dnfield/dart_path_parsing) library.
 
 Credits to the British Library for their awesome [collection of old book scans](https://www.flickr.com/photos/britishlibrary) which I used for the [showcasing app](https://github.com/biocarl/drawing_animation/tree/master/example/example_03).
+
+This is an amazing Package.
