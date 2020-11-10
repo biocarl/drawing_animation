@@ -51,6 +51,8 @@ class AnimatedDrawing extends StatefulWidget {
     this.scaleToViewport = true,
     this.debug,
     this.paints = const <Paint>[],
+        this.package,
+
   })  : this.paths = []
         // this.paints = []
         {
@@ -99,12 +101,16 @@ class AnimatedDrawing extends StatefulWidget {
     this.lineAnimation = LineAnimation.oneByOne,
     this.scaleToViewport = true,
     this.debug,
-  }) : this.assetPath = ''
+  }) : this.assetPath = '', this.package = null
   {
     assertAnimationParameters();
     assert(this.paths.isNotEmpty);
     if (this.paints.isNotEmpty) assert(this.paints.length == this.paths.length);
   }
+
+  /// The name of the package from which the picture is included. See the
+  /// documentation for the [ExactAssetPicture] class itself for details.
+  final String package;
 
   /// Provide path data via an SVG asset.
   ///
