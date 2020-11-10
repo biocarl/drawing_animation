@@ -50,8 +50,9 @@ class AnimatedDrawing extends StatefulWidget {
     this.lineAnimation = LineAnimation.oneByOne,
     this.scaleToViewport = true,
     this.debug,
-  })  : this.paths = [],
-        this.paints = []
+    this.paints = const <Paint>[],
+  })  : this.paths = []
+        // this.paints = []
         {
     assertAnimationParameters();
     assert(this.assetPath.isNotEmpty);
