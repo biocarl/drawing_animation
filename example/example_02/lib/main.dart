@@ -43,7 +43,7 @@ class SvgDrawingWithCustomController extends StatefulWidget {
 class SvgDrawingWithCustomControllerState
     extends State<SvgDrawingWithCustomController>
     with SingleTickerProviderStateMixin {
-  AnimationController _controller;
+  AnimationController? _controller;
   bool _running = false;
 
   @override
@@ -57,16 +57,16 @@ class SvgDrawingWithCustomControllerState
 
   @override
   void dispose() {
-    _controller.dispose();
+    _controller!.dispose();
     super.dispose();
   }
 
   void _startAnimation() {
     if (_running) {
-      _controller.stop();
+      _controller!.stop();
     } else {
-      _controller.stop();
-      _controller.repeat();
+      _controller!.stop();
+      _controller!.repeat();
     }
     _running = !_running;
   }
