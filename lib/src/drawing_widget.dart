@@ -125,17 +125,17 @@ class AnimatedDrawing extends StatefulWidget {
   /// When a animation controller is specified, the progress of the animation can be controlled externally.
   ///
   /// The visibility of the rendered SVG depends on the current controller.value but also on the type of [LineAnimation]. When no controller is provided the progress of the animation is controlled via the fields [run], [duration].
-  final AnimationController controller;
+  final AnimationController? controller;
 
   /// Easing curves are used to adjust the rate of change of an animation over time, allowing them to speed up and slow down, rather than moving at a constant rate.
   ///
   /// When the animation is controlled via an external [AnimationController] object in [controller], the curve is applied to that controller respectively.
-  final Curve animationCurve;
+  final Curve? animationCurve;
 
   /// Callback is evoked after one animation cycle has finished.
   ///
   /// By default every animation repeats infinitely. For running an animation only once you can use this callback to set [run] to false after the first animation cycle completed. This field is ignored when [controller] is provided and the animation is set to [controller.repeat()].
-  final VoidCallback onFinish;
+  final VoidCallback? onFinish;
 
   /// Callback is evoked when a complete path is painted to the canvas.
   ///
@@ -143,31 +143,31 @@ class AnimatedDrawing extends StatefulWidget {
   /// If the animation reverses (for examples when applying animation curves) the callback might fire several times for the same path.
   ///
   /// The callback fires when the complete Path is painted to the canvas. This does also mean that other Path objects might already been drawn in the same frame. If you want for instance pause a animation after a certain Path element is painted you should consider using the [range] functionality and use the onFinish callback instead.
-  final PaintedPathCallback onPaint;
+  final PaintedPathCallback? onPaint;
 
   ///Denotes the order in which the path elements are drawn to canvas when [lineAnimation] is set to [LineAnimation.oneByOne]. When no [animationOrder] is specified it defaults to [PathOrder.original]. Do not confuse this option with the default rendering order, whereas the first path elements are painted first to the canvas and therefore potentially occluded by subsequent elements ([w3-specs](https://www.w3.org/TR/SVG/render.html#RenderingOrder)). For now the rendering order always defaults to [PathOrder.original].
-  final PathOrder animationOrder;
+  final PathOrder? animationOrder;
 
   /// When no custom animation controller is provided the state of the animation can be controlled via [run].
   ///
   /// Is [run] set to true the first animation cycle is triggered.
   ///
   /// By default every animation repeats infinitely. For running an animation only once you can use the callback [onFinish] to set [run] to false after the first cycle completed. When [run] is set to false while the animation is still running, the animation is stopped at that point in time. If [run] is set to true again the animation is reset to the beginning. To continue the animation at the previous value you might consider using [controller].
-  final bool run;
+  final bool? run;
 
   /// When no custom animation controller is provided the duration of the animation can be controlled via [duration].
-  final Duration duration;
+  final Duration? duration;
 
   /// When [width] is specified parent constraints are ignored. When only [width] or [height] is specified the original aspect ratio is preserved.
-  final double width;
+  final double? width;
 
   /// When [height] is specified parent constraints are ignored. When only [width] or [height] is specified the original aspect ratio is preserved.
-  final double height;
+  final double? height;
 
   /// Specifies a start and end point from where to start and stop the animation.
   ///
   /// For now only [PathIndexRange] is supported as parameter type.
-  final AnimationRange range;
+  final AnimationRange? range;
 
   /// Specifies in which way the path elements are drawn to the canvas.
   ///
@@ -180,7 +180,7 @@ class AnimatedDrawing extends StatefulWidget {
   final bool scaleToViewport;
 
   /// For debugging, not for production use.
-  final DebugOptions debug;
+  final DebugOptions? debug;
 
   @override
   AbstractAnimatedDrawingState createState() {

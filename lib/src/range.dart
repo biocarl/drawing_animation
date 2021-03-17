@@ -3,10 +3,10 @@
 /// Segments below that range will be painted with the first frame of the animation and therefore not iteratively. Segments above that range will be excluded from the animation. This class must not be inherited.
 abstract class AnimationRange {
   AnimationRange(this.start, this.end) {
-    assert(start <= end && start >= 0 && end >= 0);
+    assert(start! <= end! && start! >= 0 && end! >= 0);
   }
-  final int start;
-  final int end;
+  final int? start;
+  final int? end;
 
   bool get isLower => this.start != null;
   bool get isUpper => this.end != null;
@@ -20,5 +20,5 @@ abstract class AnimationRange {
 ///
 /// The [start] should be >= 0 and [end] < than the number of the provided Path objects.
 class PathIndexRange extends AnimationRange {
-  PathIndexRange({int start, int end}) : super(start, end);
+  PathIndexRange({int? start, int? end}) : super(start, end);
 }

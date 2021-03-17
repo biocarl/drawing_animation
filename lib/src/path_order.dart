@@ -14,7 +14,7 @@ class PathOrder {
       : this._comparator = _byLength(reverse: reverse);
 
   /// The [PathSegment] order is defined according to its position in the overall bounding box. The position is defined as the center of the respective bounding box of each [PathSegment] element. The field [direction] specifies in which direction the position attribute is compared.
-  PathOrder.byPosition({@required AxisDirection direction})
+  PathOrder.byPosition({required AxisDirection direction})
       : this._comparator = _byPosition(direction: direction);
 
   /// Internal
@@ -32,47 +32,47 @@ class PathOrder {
   static Comparator<PathSegment> _byLength({reverse = false}) {
     return (reverse)
         ? (PathSegment a, PathSegment b) {
-            return a.length.compareTo(b.length);
+            return a.length!.compareTo(b.length!);
           }
         : (PathSegment a, PathSegment b) {
-            return b.length.compareTo(a.length);
+            return b.length!.compareTo(a.length!);
           };
   }
 
   static Comparator<PathSegment> _byPosition(
-      {@required AxisDirection direction}) {
+      {required AxisDirection direction}) {
     switch (direction) {
       case AxisDirection.left:
         return (PathSegment a, PathSegment b) {
-          return b.path
+          return b.path!
               .getBounds()
               .center
               .dx
-              .compareTo(a.path.getBounds().center.dx);
+              .compareTo(a.path!.getBounds().center.dx);
         };
       case AxisDirection.right:
         return (PathSegment a, PathSegment b) {
-          return a.path
+          return a.path!
               .getBounds()
               .center
               .dx
-              .compareTo(b.path.getBounds().center.dx);
+              .compareTo(b.path!.getBounds().center.dx);
         };
       case AxisDirection.up:
         return (PathSegment a, PathSegment b) {
-          return b.path
+          return b.path!
               .getBounds()
               .center
               .dy
-              .compareTo(a.path.getBounds().center.dy);
+              .compareTo(a.path!.getBounds().center.dy);
         };
       case AxisDirection.down:
         return (PathSegment a, PathSegment b) {
-          return a.path
+          return a.path!
               .getBounds()
               .center
               .dy
-              .compareTo(b.path.getBounds().center.dy);
+              .compareTo(b.path!.getBounds().center.dy);
         };
       default:
         return PathOrder._original()._getComparator();

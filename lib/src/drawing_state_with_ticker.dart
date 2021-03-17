@@ -11,12 +11,12 @@ class AnimatedDrawingWithTickerState extends AbstractAnimatedDrawingState
     this.onFinishAnimation = () {
       if (!this.onFinishEvoked) {
         this.onFinishEvoked = true;
-        SchedulerBinding.instance.addPostFrameCallback((_) {
+        SchedulerBinding.instance!.addPostFrameCallback((_) {
           this.onFinishAnimationDefault();
         });
         //Animation is completed when last frame is painted not when animation controller is finished
-        if (this.controller.status == AnimationStatus.dismissed ||
-            this.controller.status == AnimationStatus.completed) {
+        if (this.controller!.status == AnimationStatus.dismissed ||
+            this.controller!.status == AnimationStatus.completed) {
           this.finished = true;
         }
       }
@@ -30,7 +30,7 @@ class AnimatedDrawingWithTickerState extends AbstractAnimatedDrawingState
   @override
   void didUpdateWidget(AnimatedDrawing oldWidget) {
     super.didUpdateWidget(oldWidget);
-    controller.duration = widget.duration;
+    controller!.duration = widget.duration;
   }
 
   @override
@@ -45,7 +45,7 @@ class AnimatedDrawingWithTickerState extends AbstractAnimatedDrawingState
 
   @override
   void dispose() {
-    controller.dispose();
+    controller!.dispose();
     super.dispose();
   }
 
@@ -60,16 +60,16 @@ class AnimatedDrawingWithTickerState extends AbstractAnimatedDrawingState
     try {
       if ((this.paused ||
               (this.finished &&
-                  !(this.controller.status == AnimationStatus.forward))) &&
+                  !(this.controller!.status == AnimationStatus.forward))) &&
           this.widget.run == true) {
         this.paused = false;
         this.finished = false;
-        this.controller.reset();
+        this.controller!.reset();
         this.onFinishEvoked = false;
-        this.controller.forward();
-      } else if ((this.controller.status == AnimationStatus.forward) &&
+        this.controller!.forward();
+      } else if ((this.controller!.status == AnimationStatus.forward) &&
           this.widget.run == false) {
-        this.controller.stop();
+        this.controller!.stop();
         this.paused = true;
       }
     } on TickerCanceled {
