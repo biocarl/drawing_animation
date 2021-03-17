@@ -22,8 +22,8 @@ class MyApp extends StatelessWidget {
 }
 
 class HomePage extends StatefulWidget {
-  const HomePage({Key key, this.title}) : super(key: key);
-  final String title;
+  const HomePage({Key? key, this.title}) : super(key: key);
+  final String? title;
 
   @override
   HomePageState createState() => HomePageState();
@@ -394,7 +394,7 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
               flex: 1,
               child: DropdownButton<Curve>(
                 value: assets[i][2],
-                onChanged: (Curve curve) {
+                onChanged: (Curve? curve) {
                   setState(() {
                     assets[i][2] = curve;
                   });
@@ -423,7 +423,7 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
               flex: 1,
               child: DropdownButton<PathOrder>(
                 value: assets[i][6],
-                onChanged: (PathOrder order) {
+                onChanged: (PathOrder? order) {
                   setState(() {
                     assets[i][6] = order;
                   });
