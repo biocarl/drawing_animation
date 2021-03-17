@@ -5,7 +5,7 @@ import 'dart:math';
 import 'package:drawing_animation/drawing_animation.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
-// import 'package:simple_permissions/simple_permissions.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 void main() => runApp(MyApp());
 
@@ -24,7 +24,7 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   bool start = false;
   bool run = false;
-  Directory storageDir;
+  Directory? storageDir;
   String parentFolder = "drawing_animation";
   //Resulting in  a folder called `simple` containing simple_0.png ... simple_100.png
   String projectName = "project1";
@@ -40,21 +40,29 @@ class _MyHomePageState extends State<MyHomePage> {
 
   //Stores project folders on external storage of the phone
   Future<void> requestPermissions() async {
-    var res = await SimplePermissions.requestPermission(
-        Permission.WriteExternalStorage);
-    if (res == PermissionStatus.authorized) {
+    PermissionStatus status = await Permission.storage.status;
+    if (status.isDenied) {
+      status = await Permission.storage.request();
+    }
+
+    if (status.isGranted) {
       //External storage
       this.storageDir = (await getExternalStorageDirectory());
       //current project
       this.storageDir = Directory(
-          "${this.storageDir.path}/${this.parentFolder}/${this.projectName}");
+          "${this.storageDir!.path}/${this.parentFolder}/${this.projectName}");
       //Replace existing project folder
-      if (await this.storageDir.exists())
-        this.storageDir.deleteSync(recursive: true);
-      this.storageDir = await this.storageDir.create(recursive: true);
+      if (await this.storageDir!.exists())
+        this.storageDir!.deleteSync(recursive: true);
+      this.storageDir = await this.storageDir!.create(recursive: true);
       setState(() {
         this.start = true;
       });
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          action:
+              SnackBarAction(label: 'Continue', onPressed: requestPermissions),
+          content: Text('Please grant storage permission, to continue')));
     }
   }
 
@@ -103,7 +111,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   //Here starts the Metatron-------------------------------
   final double r = 2;
-  List<Path> metatron;
+  late List<Path> metatron;
   Grid g = new Grid();
 
   Path circle(Offset offset) {
@@ -128,7 +136,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Path center(Offset a, Offset b) {
-    Offset cp = Offset.lerp(a, b, 0.5);
+    Offset cp = Offset.lerp(a, b, 0.5)!;
     return line(cp, g[2][2]);
   }
 
@@ -141,7 +149,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Path out(Offset a) {
     Offset cp = Offset.lerp(g[2][2], a,
-        3 / 4); //TODO make it so only depends on r - no hardcoded values
+        3 / 4)!; //TODO make it so only depends on r - no hardcoded values
     return line(g[2][2], cp);
   }
 
@@ -164,8 +172,8 @@ class _MyHomePageState extends State<MyHomePage> {
   Paint colorize(int index) {
     //Main colors
     Color primaryColor = Colors.blueAccent;
-    Color secondaryColor = Colors.orangeAccent[100];
-    Color doodleColor = Colors.grey[300];
+    Color? secondaryColor = Colors.orangeAccent[100];
+    Color? doodleColor = Colors.grey[300];
     //Theme Flutter:
     // Color primaryColor = Colors.blue[600];
     // Color secondaryColor = Colors.yellow[700];
@@ -173,7 +181,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
     //Shaders
     double t = 5 * r;
-    var grad = ui.Gradient.radial(g[2][2], t, [doodleColor, secondaryColor],
+    var grad = ui.Gradient.radial(g[2][2], t, [doodleColor!, secondaryColor!],
         [3.0 * r / t, 4 * r / t], TileMode.mirror);
 
     //Gray circles
@@ -241,7 +249,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   List<Path> createMetatron() {
-    List<Path> paths = List();
+    List<Path> paths = [];
 
     //Inner circles 0 - 5
     paths
