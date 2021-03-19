@@ -285,7 +285,8 @@ abstract class AbstractAnimatedDrawingState extends State<AnimatedDrawing> {
   bool svgAssetProvided() => this.widget.assetPath.isNotEmpty;
 
   void parseFromSvgAsset(SvgParser parser) {
-    parser.loadFromFile(this.widget.assetPath).then((_) {
+    final assetPath = widget.package != null ? 'packages/${widget.package}/${widget.assetPath}' : widget.assetPath;
+    parser.loadFromFile(assetPath).then((_) {
       setState(() {
         //raw paths
         this.widget.paths.clear();
