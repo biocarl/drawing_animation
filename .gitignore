@@ -35,3 +35,5 @@ example/example_01_web/
 
 #Publish
 store/
+
+pubspec.lock

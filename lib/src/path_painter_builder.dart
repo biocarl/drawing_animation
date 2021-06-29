@@ -5,17 +5,17 @@ import 'painter.dart';
 import 'parser.dart';
 
 class PathPainterBuilder {
-  PathPainterBuilder([LineAnimation lineAnimation]) {
-    this.lineAnimation = lineAnimation;
+  PathPainterBuilder([LineAnimation? lineAnimation]) {
+    this.lineAnimation = lineAnimation!;
   }
-  List<Paint> paints;
-  void Function(int currentPaintedPathIndex) onFinishFrame;
-  bool scaleToViewport;
-  DebugOptions debugOptions;
-  List<PathSegment> pathSegments;
-  LineAnimation lineAnimation;
-  Animation<double> animation;
-  Size customDimensions;
+  late List<Paint> paints;
+  void Function(int currentPaintedPathIndex)? onFinishFrame;
+  late bool scaleToViewport;
+  late DebugOptions debugOptions;
+  late List<PathSegment> pathSegments;
+  late LineAnimation lineAnimation;
+  late Animation<double> animation;
+  Size? customDimensions;
 
   PathPainter build() {
     switch (lineAnimation) {
@@ -35,7 +35,7 @@ class PathPainterBuilder {
     this.animation = animation;
   }
 
-  void setCustomDimensions(Size customDimensions) {
+  void setCustomDimensions(Size? customDimensions) {
     this.customDimensions = customDimensions;
   }
 
@@ -53,7 +53,7 @@ class PathPainterBuilder {
   }
 
   void setDebugOptions(DebugOptions debug) {
-    this.debugOptions = debug;
+    debugOptions = debug;
   }
 
   void setPathSegments(List<PathSegment> pathSegments) {
