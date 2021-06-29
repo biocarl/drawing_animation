@@ -18,6 +18,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   bool run = true;
+
   @override
   void initState() {
     super.initState();
@@ -28,9 +29,9 @@ class _MyHomePageState extends State<MyHomePage> {
     return Scaffold(
       floatingActionButton: FloatingActionButton(
           onPressed: () => setState(() {
-                this.run = !this.run;
+                run = !run;
               }),
-          child: Icon((this.run) ? Icons.stop : Icons.play_arrow)),
+          child: Icon((run) ? Icons.stop : Icons.play_arrow)),
       body: Center(
           child: Column(children: <Widget>[
         //Simplfied AnimatedDrawing using Flutter Path objects
@@ -45,26 +46,26 @@ class _MyHomePageState extends State<MyHomePage> {
           paints: [
             Paint()..style = PaintingStyle.stroke,
           ],
-          run: this.run,
+          run: run,
           animationOrder: PathOrders.original,
-          duration: new Duration(seconds: 2),
+          duration: Duration(seconds: 2),
           lineAnimation: LineAnimation.oneByOne,
           animationCurve: Curves.linear,
           onFinish: () => setState(() {
-            this.run = false;
+            run = false;
           }),
         )),
 
         //Simplfied AnimatedDrawing parsing Path objects from an Svg asset
         Expanded(
             child: AnimatedDrawing.svg(
-          "assets/circle.svg",
-          run: this.run,
-          duration: new Duration(seconds: 2),
+          'assets/circle.svg',
+          run: run,
+          duration: Duration(seconds: 2),
           lineAnimation: LineAnimation.oneByOne,
           animationCurve: Curves.linear,
           onFinish: () => setState(() {
-            this.run = false;
+            run = false;
           }),
         )),
       ])),

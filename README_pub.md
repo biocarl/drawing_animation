@@ -9,7 +9,7 @@ Currently only simple path elements without transforms are supported (see [Suppo
 1. **Add dependency in your `pubspec.yaml`**
 ```yaml
 dependencies:
-  drawing_animation: ^0.1.1
+  drawing_animation: ^1.0.0
 
 ```
 
