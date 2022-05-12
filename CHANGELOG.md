@@ -1,5 +1,9 @@
 # CHANGES
 
+## 1.0.0
+* Stable release of null safety migration
+* Update dependencies
+
 ## 0.1.4
 * Update dependencies
 

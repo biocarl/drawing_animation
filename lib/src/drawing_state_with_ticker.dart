@@ -8,16 +8,16 @@ import 'drawing_widget.dart';
 class AnimatedDrawingWithTickerState extends AbstractAnimatedDrawingState
     with SingleTickerProviderStateMixin {
   AnimatedDrawingWithTickerState() : super() {
-    this.onFinishAnimation = () {
-      if (!this.onFinishEvoked) {
-        this.onFinishEvoked = true;
-        SchedulerBinding.instance.addPostFrameCallback((_) {
-          this.onFinishAnimationDefault();
+    onFinishAnimation = () {
+      if (onFinishEvoked == false) {
+        onFinishEvoked = true;
+        SchedulerBinding.instance!.addPostFrameCallback((_) {
+          onFinishAnimationDefault();
         });
         //Animation is completed when last frame is painted not when animation controller is finished
-        if (this.controller.status == AnimationStatus.dismissed ||
-            this.controller.status == AnimationStatus.completed) {
-          this.finished = true;
+        if (controller!.status == AnimationStatus.dismissed ||
+            controller!.status == AnimationStatus.completed) {
+          finished = true;
         }
       }
     };
@@ -30,13 +30,13 @@ class AnimatedDrawingWithTickerState extends AbstractAnimatedDrawingState
   @override
   void didUpdateWidget(AnimatedDrawing oldWidget) {
     super.didUpdateWidget(oldWidget);
-    controller.duration = widget.duration;
+    controller!.duration = widget.duration;
   }
 
   @override
   void initState() {
     super.initState();
-    controller = new AnimationController(
+    controller = AnimationController(
       vsync: this,
       duration: widget.duration,
     );
@@ -45,7 +45,7 @@ class AnimatedDrawingWithTickerState extends AbstractAnimatedDrawingState
 
   @override
   void dispose() {
-    controller.dispose();
+    controller!.dispose();
     super.dispose();
   }
 
@@ -58,19 +58,19 @@ class AnimatedDrawingWithTickerState extends AbstractAnimatedDrawingState
 //
   Future<void> buildAnimation() async {
     try {
-      if ((this.paused ||
-              (this.finished &&
-                  !(this.controller.status == AnimationStatus.forward))) &&
-          this.widget.run == true) {
-        this.paused = false;
-        this.finished = false;
-        this.controller.reset();
-        this.onFinishEvoked = false;
-        this.controller.forward();
-      } else if ((this.controller.status == AnimationStatus.forward) &&
-          this.widget.run == false) {
-        this.controller.stop();
-        this.paused = true;
+      if ((paused ||
+              (finished &&
+                  (controller!.status == AnimationStatus.forward) == false)) &&
+          widget.run == true) {
+        paused = false;
+        finished = false;
+        controller!.reset();
+        onFinishEvoked = false;
+        await controller!.forward();
+      } else if ((controller!.status == AnimationStatus.forward) &&
+          widget.run == false) {
+        controller!.stop();
+        paused = true;
       }
     } on TickerCanceled {
       // TODO usecase?
