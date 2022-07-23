@@ -11,7 +11,7 @@ dependencies:
   flutter:
     sdk: flutter
   xml: ^5.1.2
-  path_parsing: ^0.2.1
+  path_parsing: ^1.0.0
 
 dev_dependencies:
   flutter_test:
