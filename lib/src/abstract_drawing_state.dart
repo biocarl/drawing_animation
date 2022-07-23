@@ -65,7 +65,7 @@ abstract class AbstractAnimatedDrawingState extends State<AnimatedDrawing> {
 
   void evokeOnPaintForPath(int i) {
     //Only evoked in next frame
-    SchedulerBinding.instance!.addPostFrameCallback((_) {
+    SchedulerBinding.instance.addPostFrameCallback((_) {
       setState(() {
         widget.onPaint!(i, widget.paths[i]);
       });
@@ -103,8 +103,8 @@ abstract class AbstractAnimatedDrawingState extends State<AnimatedDrawing> {
 
   void applyAnimationCurve() {
     if (controller != null && widget.animationCurve != null) {
-      curve = CurvedAnimation(
-          parent: controller!, curve: widget.animationCurve!);
+      curve =
+          CurvedAnimation(parent: controller!, curve: widget.animationCurve!);
       animationCurve = widget.animationCurve;
     }
   }
@@ -183,8 +183,9 @@ abstract class AbstractAnimatedDrawingState extends State<AnimatedDrawing> {
     if (widget.range != range) {
       checkValidRange();
 
-      pathSegmentsToPaintAsBackground =
-          pathSegments.where((x) => x.pathIndex < widget.range!.start!).toList();
+      pathSegmentsToPaintAsBackground = pathSegments
+          .where((x) => x.pathIndex < widget.range!.start!)
+          .toList();
 
       pathSegmentsToAnimate = pathSegments
           .where((x) => (x.pathIndex >= widget.range!.start! &&
@@ -293,7 +294,6 @@ abstract class AbstractAnimatedDrawingState extends State<AnimatedDrawing> {
     final defaultSortingWhenNoOrderDefined =
         widget.lineAnimation == LineAnimation.allAtOnce &&
             animationOrder != PathOrders.original;
-    return defaultSortingWhenNoOrderDefined ||
-        widget.lineAnimation == null;
+    return defaultSortingWhenNoOrderDefined || widget.lineAnimation == null;
   }
 }

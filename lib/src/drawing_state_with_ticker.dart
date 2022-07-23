@@ -11,7 +11,7 @@ class AnimatedDrawingWithTickerState extends AbstractAnimatedDrawingState
     onFinishAnimation = () {
       if (onFinishEvoked == false) {
         onFinishEvoked = true;
-        SchedulerBinding.instance!.addPostFrameCallback((_) {
+        SchedulerBinding.instance.addPostFrameCallback((_) {
           onFinishAnimationDefault();
         });
         //Animation is completed when last frame is painted not when animation controller is finished
