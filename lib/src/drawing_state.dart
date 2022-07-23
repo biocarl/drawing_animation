@@ -9,7 +9,7 @@ class AnimatedDrawingState extends AbstractAnimatedDrawingState {
     onFinishAnimation = () {
       if (onFinishEvoked == false) {
         onFinishEvoked = true;
-        SchedulerBinding.instance!.addPostFrameCallback((_) {
+        SchedulerBinding.instance.addPostFrameCallback((_) {
           onFinishAnimationDefault();
         });
       }
