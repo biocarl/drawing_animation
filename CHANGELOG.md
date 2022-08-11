@@ -1,5 +1,8 @@
 # CHANGES
 
+## 1.0.1
+* Add fix for resolving versions
+
 ## 1.0.0
 * Stable release of null safety migration
 * Update dependencies

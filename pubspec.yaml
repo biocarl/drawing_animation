@@ -1,6 +1,6 @@
 name: drawing_animation
 description: An dart-only library for gradually painting SVG path objects on canvas (drawing line animation).
-version: 1.0.0
+version: 1.0.1
 repository: https://github.com/biocarl/drawing_animation
 homepage: https://twitter.com/cahaucks
 
