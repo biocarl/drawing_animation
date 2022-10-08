@@ -1,6 +1,4 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'abstract_drawing_state.dart';
 import 'debug.dart';
 import 'drawing_state.dart';
@@ -34,6 +32,7 @@ class AnimatedDrawing extends StatefulWidget {
   /// ```
   AnimatedDrawing.svg(
     this.assetPath, {
+    super.key,
     //Standard
     this.controller,
     //Simplified version
@@ -79,6 +78,7 @@ class AnimatedDrawing extends StatefulWidget {
   /// Optionally, [paints] can be provided which specifies a [Paint] object for each [Path] element in [paths].
   AnimatedDrawing.paths(
     this.paths, {
+    super.key,
     //AnimatedDrawing.paths
     this.paints = const <Paint>[],
     //Standard
@@ -190,7 +190,6 @@ class AnimatedDrawing extends StatefulWidget {
 
   // TODO Refactor SRP
   void assertAnimationParameters() {
-    assert(!(controller == null &&
-        (run == null || duration == null)));
+    assert(!(controller == null && (run == null || duration == null)));
   }
 }
