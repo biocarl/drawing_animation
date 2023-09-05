@@ -5,15 +5,18 @@ repository: https://github.com/biocarl/drawing_animation
 homepage: https://twitter.com/cahaucks
 
 environment:
-  sdk: ">=2.12.0 <3.0.0"
+  sdk: ">=2.17.0 <3.0.0"
 
 dependencies:
   flutter:
     sdk: flutter
-  xml: ^5.1.2
-  path_parsing: ^1.0.0
+  xml: ^6.1.0
+  path_parsing: ^1.0.1
+  collection: ^1.16.0
+  equatable: ^2.0.5
 
 dev_dependencies:
+  flutter_lints: ^2.0.1
   flutter_test:
     sdk: flutter
-  mockito: ^5.0.10
+  mockito: ^5.3.2

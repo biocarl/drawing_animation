@@ -18,7 +18,7 @@ void main() {
           'test.svg',
           controller: null,
           run: true,
-          duration: Duration(seconds: 5),
+          duration: const Duration(seconds: 5),
         ),
         const TypeMatcher<AnimatedDrawing>());
 
@@ -34,7 +34,7 @@ void main() {
     //[C] AnimatedDrawing.paths
     //Not working - missing arguments: empty list of paths
     expect(
-        () => AnimatedDrawing.paths(<Path>[],
+        () => AnimatedDrawing.paths(const <Path>[],
             controller: MockAnimationController()),
         throwsA(const TypeMatcher<AssertionError>()));
   });

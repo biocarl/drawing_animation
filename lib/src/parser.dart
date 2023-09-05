@@ -1,7 +1,5 @@
 import 'dart:async';
-import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:path_parsing/path_parsing.dart';
 import 'package:xml/xml.dart' as xml;
@@ -70,7 +68,8 @@ class SvgParser {
         double? strokeWidth;
 
         //Attributes - [1] css-styling
-        var style = attributes.firstWhereOrNull((attr) => attr.name.local == 'style');
+        var style =
+            attributes.firstWhereOrNull((attr) => attr.name.local == 'style');
         if (style != null) {
           //Parse color of stroke
           var exp = RegExp(r'stroke:([^;]+);');
@@ -85,14 +84,14 @@ class SvgParser {
         }
 
         //Attributes - [2] svg-attributes
-        var strokeElement = attributes.firstWhereOrNull(
-            (attr) => attr.name.local == 'stroke');
+        var strokeElement =
+            attributes.firstWhereOrNull((attr) => attr.name.local == 'stroke');
         if (strokeElement != null) {
           color = parseColor(strokeElement.value);
         }
 
-        var strokeWidthElement = attributes.firstWhereOrNull(
-            (attr) => attr.name.local == 'stroke-width');
+        var strokeWidthElement = attributes
+            .firstWhereOrNull((attr) => attr.name.local == 'stroke-width');
         if (strokeWidthElement != null) {
           strokeWidth = double.tryParse(strokeWidthElement.value);
         }
@@ -109,12 +108,12 @@ class SvgParser {
     _paths = paths;
 
     var index = 0;
-    paths.forEach((p) {
+    for (var path in paths) {
       //TODO consider allowing this and just continue if the case
-      addPathSegments(p, index, null,
+      addPathSegments(path, index, null,
           null); //TODO Apply `paints` already here? not so SOLID[0]
       index++;
-    });
+    }
   }
 
   /// Parses Svg from provided asset path

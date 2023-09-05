@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
-import 'dart:ui';
 import 'drawing_widget.dart';
 import 'debug.dart';
 import 'line_animation.dart';
