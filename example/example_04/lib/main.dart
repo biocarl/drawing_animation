@@ -7,22 +7,26 @@ import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-void main() => runApp(MyApp());
+void main() => runApp(const MyApp());
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(home: MyHomePage());
+    return const MaterialApp(home: MyHomePage());
   }
 }
 
 class MyHomePage extends StatefulWidget {
+  const MyHomePage({super.key});
+
   @override
   _MyHomePageState createState() => _MyHomePageState();
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  bool start = false;
+  bool waitingForPermissions = true;
   bool run = false;
   late Directory storageDir;
   String parentFolder = 'drawing_animation';
@@ -45,15 +49,14 @@ class _MyHomePageState extends State<MyHomePage> {
       //External storage
       storageDir = (await getExternalStorageDirectory())!;
       //current project
-      storageDir = Directory(
-          '${storageDir.path}/$parentFolder/$projectName');
+      storageDir = Directory('${storageDir.path}/$parentFolder/$projectName');
       //Replace existing project folder
       if (await storageDir.exists()) {
         storageDir.deleteSync(recursive: true);
       }
       storageDir = await storageDir.create(recursive: true);
       setState(() {
-        start = true;
+        waitingForPermissions = false;
       });
     }
   }
@@ -63,40 +66,53 @@ class _MyHomePageState extends State<MyHomePage> {
     return Scaffold(
       floatingActionButton: FloatingActionButton(
           onPressed: () => setState(() {
-            metatron = createMetatron();
-            run = !run;
-          }),
+                metatron = createMetatron();
+                run = !run;
+              }),
           child: Icon((run) ? Icons.stop : Icons.play_arrow)),
       body: Center(
-          child: Column(children: <Widget>[
-            (start)
-                ? Expanded(
-                child:
-                // [1] AnimatedDrawing.svg
-                // AnimatedDrawing.svg(
-                //   "assets/circle.svg",
-                // [2] AnimatedDrawing.paths
-                AnimatedDrawing.paths(
-                  metatron,
-                  paints: List<Paint>.generate(metatron.length, colorize),
-                  run: run,
-                  duration: Duration(seconds: 1),
-                  lineAnimation: LineAnimation.oneByOne,
-                  animationCurve: Curves.linear,
-                  onFinish: () => setState(() {
-                    run = false;
-                  }),
-                  //Uncomment this to write each frame to file
-                  // debug: DebugOptions(
-                  //   fileName: this.projectName,
-                  //   showBoundingBox: false,
-                  //   showViewPort: false,
-                  //   recordFrames: true,
-                  //   resolutionFactor: 2.0,
-                  //   outPutDir: this.storageDir.path,
-                  // ),
-                ))
-                : Container(),
+          child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+            (waitingForPermissions)
+                ? Column(
+                    children: [
+                      const Text('Could not get storage permissions...'),
+                      ElevatedButton(
+                          onPressed: () {
+                            setState(() {
+                              waitingForPermissions = false;
+                            });
+                          },
+                          child: const Text('Continue anyway'))
+                    ],
+                  )
+                : Expanded(
+                    child:
+                        // [1] AnimatedDrawing.svg
+                        // AnimatedDrawing.svg(
+                        //   "assets/circle.svg",
+                        // [2] AnimatedDrawing.paths
+                        AnimatedDrawing.paths(
+                    metatron,
+                    paints: List<Paint>.generate(metatron.length, colorize),
+                    run: run,
+                    duration: const Duration(seconds: 1),
+                    lineAnimation: LineAnimation.oneByOne,
+                    animationCurve: Curves.linear,
+                    onFinish: () => setState(() {
+                      run = false;
+                    }),
+                    //Uncomment this to write each frame to file
+                    // debug: DebugOptions(
+                    //   fileName: this.projectName,
+                    //   showBoundingBox: false,
+                    //   showViewPort: false,
+                    //   recordFrames: true,
+                    //   resolutionFactor: 2.0,
+                    //   outPutDir: this.storageDir.path,
+                    // ),
+                  )),
           ])),
     );
   }
