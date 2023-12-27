@@ -1,23 +1,23 @@
 import 'dart:async';
 import 'dart:core';
-import 'dart:ui';
 import 'package:drawing_animation/drawing_animation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-void main() => runApp(MyApp());
+void main() => runApp(const MyApp());
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
-    SystemChrome.setEnabledSystemUIOverlays([SystemUiOverlay.bottom]);
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
     return MaterialApp(
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: HomePage(),
+      home: const HomePage(),
     );
   }
 }
@@ -51,7 +51,7 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
       LineAnimation.oneByOne,
       Curves.linear,
       5,
-      Color.fromRGBO(224, 121, 42, 1.0),
+      const Color.fromRGBO(224, 121, 42, 1.0),
       false,
       PathOrders.original,
       'https://www.flickr.com/photos/britishlibrary/11009096375',
@@ -157,7 +157,7 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   Widget createPage(int i, BuildContext context) {
     var isLandscape =
-    (MediaQuery.of(context).orientation == Orientation.portrait);
+        (MediaQuery.of(context).orientation == Orientation.portrait);
     if (previousScreen != i) {
       isRunning = false;
       showStartButton = true;
@@ -172,46 +172,46 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
         (isLandscape) ? Expanded(flex: 3, child: Container()) : Container(),
         (isLandscape)
             ? Expanded(
-            flex: 6,
-            child: Center(
-                child: Padding(
-                    padding: EdgeInsets.all(24.0),
-                    child: createInstructions(i))))
+                flex: 6,
+                child: Center(
+                    child: Padding(
+                        padding: const EdgeInsets.all(24.0),
+                        child: createInstructions(i))))
             : Container(),
         Flexible(
             flex: 12,
             child: Container(
-              padding: EdgeInsets.all(10.0),
-              decoration: BoxDecoration(),
+              padding: const EdgeInsets.all(10.0),
+              decoration: const BoxDecoration(),
               child: Stack(children: <Widget>[
                 (!isRunning && showStartButton)
                     ? Center(
-                    child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        mainAxisSize: MainAxisSize.min,
-                        children: <Widget>[
-                          Text(
-                            'Start animation',
-                            style: TextStyle(
-                              color: (assets[i][4] == Colors.black)
-                                  ? Colors.white
-                                  : Colors.black,
+                        child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            mainAxisSize: MainAxisSize.min,
+                            children: <Widget>[
+                            Text(
+                              'Start animation',
+                              style: TextStyle(
+                                color: (assets[i][4] == Colors.black)
+                                    ? Colors.white
+                                    : Colors.black,
+                              ),
                             ),
-                          ),
-                          IconButton(
-                            icon: Icon(
-                              Icons.touch_app,
-                              color: (assets[i][4] == Colors.black)
-                                  ? Colors.white
-                                  : Colors.black,
-                            ),
-                            onPressed: () {
-                              setState(() {
-                                startAnimation(i);
-                              });
-                            },
-                          )
-                        ]))
+                            IconButton(
+                              icon: Icon(
+                                Icons.touch_app,
+                                color: (assets[i][4] == Colors.black)
+                                    ? Colors.white
+                                    : Colors.black,
+                              ),
+                              onPressed: () {
+                                setState(() {
+                                  startAnimation(i);
+                                });
+                              },
+                            )
+                          ]))
                     : Container(),
                 GestureDetector(
                     onTap: () => startAnimation(i),
@@ -232,7 +232,7 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
                         });
 
                         if (i == 0) {
-                          Timer(Duration(seconds: 2), () {
+                          Timer(const Duration(seconds: 2), () {
                             setState(() {
                               showSwipe = true;
                             });
@@ -260,29 +260,28 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
       ]),
       (isLandscape)
           ? Column(children: <Widget>[
-        AnimatedSize(
-            curve: Curves.bounceInOut,
-            vsync: this,
-            duration: Duration(milliseconds: 800),
-            child: Card(
-                margin: EdgeInsets.all(20.0),
-                color: Colors.grey[250],
-                child: Container(
-                    padding: EdgeInsets.all(10.0),
-                    child: Column(children: <Widget>[
-                      Row(children: <Widget>[
-                        Flexible(
-                            flex: 2,
-                            child: Column(
-                              children: createCardOptions(i),
-                            ))
-                      ]),
-                    ])))),
-        Expanded(
-          flex: 4,
-          child: Container(),
-        ) //TODO Fix, Find Expanded in the Card Widget tree
-      ])
+              AnimatedSize(
+                  curve: Curves.bounceInOut,
+                  duration: const Duration(milliseconds: 800),
+                  child: Card(
+                      margin: const EdgeInsets.all(20.0),
+                      color: Colors.grey[250],
+                      child: Container(
+                          padding: const EdgeInsets.all(10.0),
+                          child: Column(children: <Widget>[
+                            Row(children: <Widget>[
+                              Flexible(
+                                  flex: 2,
+                                  child: Column(
+                                    children: createCardOptions(i),
+                                  ))
+                            ]),
+                          ])))),
+              Expanded(
+                flex: 4,
+                child: Container(),
+              ) //TODO Fix, Find Expanded in the Card Widget tree
+            ])
           : Container(),
     ]);
   }
@@ -291,25 +290,25 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
     var options = <Widget>[
       Row(children: <Widget>[
         (cardExpanded)
-            ? Expanded(
-            flex: 1,
-            child: Text('Asset: ',
-                style: TextStyle(fontWeight: FontWeight.bold)))
+            ? const Expanded(
+                flex: 1,
+                child: Text('Asset: ',
+                    style: TextStyle(fontWeight: FontWeight.bold)))
             : Text('${assets[i][8]}',
-            style: TextStyle(fontWeight: FontWeight.bold)),
+                style: const TextStyle(fontWeight: FontWeight.bold)),
         (cardExpanded)
             ? Expanded(
-            flex: 1,
-            child: Align(
-                alignment: Alignment.centerLeft,
-                child: Text('${assets[i][0]}')))
+                flex: 1,
+                child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text('${assets[i][0]}')))
             : Container(),
         Expanded(
             flex: 1,
             child: Align(
                 alignment: Alignment.centerRight,
                 child: IconButton(
-                  icon: Icon(Icons.settings),
+                  icon: const Icon(Icons.settings),
                   tooltip: 'Control path animations',
                   onPressed: () {
                     setState(() {
@@ -327,33 +326,33 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
           Expanded(
               flex: 3,
               child: Row(children: <Widget>[
-                Expanded(
+                const Expanded(
                     child: Text('LineAnimation:',
                         style: TextStyle(fontWeight: FontWeight.bold))),
                 Expanded(
                     child: ChoiceChip(
-                      label: Text('allAtOnce'),
-                      selected: assets[i][1] == LineAnimation.allAtOnce,
-                      onSelected: (bool selected) {
-                        setState(() {
-                          assets[i][1] = selected
-                              ? LineAnimation.allAtOnce
-                              : LineAnimation.oneByOne;
-                        });
-                      },
-                    )),
+                  label: const Text('allAtOnce'),
+                  selected: assets[i][1] == LineAnimation.allAtOnce,
+                  onSelected: (bool selected) {
+                    setState(() {
+                      assets[i][1] = selected
+                          ? LineAnimation.allAtOnce
+                          : LineAnimation.oneByOne;
+                    });
+                  },
+                )),
                 Expanded(
                     child: ChoiceChip(
-                      label: Text('oneByOne'),
-                      selected: assets[i][1] == LineAnimation.oneByOne,
-                      onSelected: (bool selected) {
-                        setState(() {
-                          assets[i][1] = selected
-                              ? LineAnimation.oneByOne
-                              : LineAnimation.allAtOnce;
-                        });
-                      },
-                    )),
+                  label: const Text('oneByOne'),
+                  selected: assets[i][1] == LineAnimation.oneByOne,
+                  onSelected: (bool selected) {
+                    setState(() {
+                      assets[i][1] = selected
+                          ? LineAnimation.oneByOne
+                          : LineAnimation.allAtOnce;
+                    });
+                  },
+                )),
               ])),
         ]),
         Row(children: <Widget>[
@@ -361,33 +360,33 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
           Expanded(
               flex: 3,
               child: Row(children: <Widget>[
-                Expanded(
+                const Expanded(
                     child: Text('Repeat:',
                         style: TextStyle(fontWeight: FontWeight.bold))),
                 Expanded(
                     child: ChoiceChip(
-                      label: Text('Once'),
-                      selected: assets[i][5] == false,
-                      onSelected: (bool selected) {
-                        setState(() {
-                          assets[i][5] = !selected;
-                        });
-                      },
-                    )),
+                  label: const Text('Once'),
+                  selected: assets[i][5] == false,
+                  onSelected: (bool selected) {
+                    setState(() {
+                      assets[i][5] = !selected;
+                    });
+                  },
+                )),
                 Expanded(
                     child: ChoiceChip(
-                      label: Text('Infinite'),
-                      selected: assets[i][5] == true,
-                      onSelected: (bool selected) {
-                        setState(() {
-                          assets[i][5] = selected;
-                        });
-                      },
-                    )),
+                  label: const Text('Infinite'),
+                  selected: assets[i][5] == true,
+                  onSelected: (bool selected) {
+                    setState(() {
+                      assets[i][5] = selected;
+                    });
+                  },
+                )),
               ])),
         ]),
         Row(children: <Widget>[
-          Expanded(
+          const Expanded(
               flex: 1,
               child: Text('AnimationCurve: ',
                   style: TextStyle(fontWeight: FontWeight.bold))),
@@ -407,14 +406,14 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       .substring(1)
                       .replaceAll(RegExp(r'Curve'), ''),
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(color: Colors.black),
+                  style: const TextStyle(color: Colors.black),
                 ),
               );
             }).toList(),
           ),
         ]),
         Row(children: <Widget>[
-          Expanded(
+          const Expanded(
               flex: 1,
               child: Text('PathOrder: ',
                   style: TextStyle(fontWeight: FontWeight.bold))),
@@ -437,7 +436,7 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
           ),
         ]),
         Row(children: <Widget>[
-          Expanded(
+          const Expanded(
             flex: 1,
             child: Text(
               'Duration: ',
@@ -470,14 +469,14 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
     switch (i) {
       case 0:
         return wrap([
-          Expanded(
+          const Expanded(
               child: Text(
                   'This is a simple application showcasing the capabilities of the `drawing_animation` package.')),
           (showSwipe && i == 0 && !isRunning) ? getSwipeWidget() : Container(),
         ]);
       case 1:
         return wrap([
-          Text(
+          const Text(
               'Path elements are either drawn one after the other or all at once.'),
           Row(children: <Widget>[
             createChoiceChip(i, 1, 'oneByOne', LineAnimation.oneByOne),
@@ -486,7 +485,7 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
         ]);
       case 2:
         return wrap([
-          Text(
+          const Text(
               'The animation order defines which path segment is drawn first on the canvas.'),
           Row(children: <Widget>[
             createChoiceChip(i, 6, 'toRight', PathOrders.leftToRight),
@@ -497,7 +496,7 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
         ]);
       case 3:
         return wrap([
-          Text(
+          const Text(
               'A different animation order is e.g. obtained via the size of each element: '),
           Row(children: <Widget>[
             createChoiceChip(i, 6, 'toRight', PathOrders.leftToRight),
@@ -507,7 +506,7 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
         ]);
       case 4:
         return wrap([
-          Text(
+          const Text(
               'Curves in Flutter are used to manipulate the change of an animation over time.'),
           Row(children: <Widget>[
             createChoiceChip(i, 2, 'linear', Curves.linear),
@@ -515,15 +514,15 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
           ]),
         ]);
       default:
-        return Text('Generic here...');
+        return const Text('Generic here...');
     }
   }
 
   Widget getSwipeWidget() {
     return Expanded(
         child: Container(
-            padding: EdgeInsets.all(1.0),
-            child: Row(
+            padding: const EdgeInsets.all(1.0),
+            child: const Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
                   Icon(Icons.arrow_back_ios),
@@ -535,58 +534,58 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
   Widget createChoiceChip(int i, int j, String text, Object object) {
     return Expanded(
         child: ChoiceChip(
-          label: Text(text),
-          selected: assets[i][j] == object,
-          onSelected: (bool selected) {
-            if (selected) {
-              setState(() {
-                //Restart animation - Pause
-                isRunning = false;
-                showStartButton = false;
-              });
+      label: Text(text),
+      selected: assets[i][j] == object,
+      onSelected: (bool selected) {
+        if (selected) {
+          setState(() {
+            //Restart animation - Pause
+            isRunning = false;
+            showStartButton = false;
+          });
 
-              Timer(Duration(milliseconds: 10), () {
-                setState(() {
-                  assets[i][j] = object;
-                  isRunning = true;
-                });
-              });
-            }
-          },
-        ));
+          Timer(const Duration(milliseconds: 10), () {
+            setState(() {
+              assets[i][j] = object;
+              isRunning = true;
+            });
+          });
+        }
+      },
+    ));
   }
 
   Widget createChoiceChipMulti(
       int i, List<int> jj, String text, List<Object> objects) {
     return Expanded(
         child: ChoiceChip(
-          label: Text(text),
-          selected: assets[i][jj.first] ==
-              objects.first, //boolean depends on first object
-          onSelected: (bool selected) {
-            if (selected) {
-              setState(() {
-                //Restart animation - Pause
-                isRunning = false;
-                showStartButton = false;
-              });
+      label: Text(text),
+      selected: assets[i][jj.first] ==
+          objects.first, //boolean depends on first object
+      onSelected: (bool selected) {
+        if (selected) {
+          setState(() {
+            //Restart animation - Pause
+            isRunning = false;
+            showStartButton = false;
+          });
 
-              Timer(Duration(milliseconds: 10), () {
-                setState(() {
-                  for (var m = 0; m < objects.length; m++) {
-                    assets[i][jj[m]] = objects[m];
-                  }
-                  isRunning = true;
-                });
-              });
-            }
-          },
-        ));
+          Timer(const Duration(milliseconds: 10), () {
+            setState(() {
+              for (var m = 0; m < objects.length; m++) {
+                assets[i][jj[m]] = objects[m];
+              }
+              isRunning = true;
+            });
+          });
+        }
+      },
+    ));
   }
 
   Widget wrap(List<Widget> widgets) {
     return Container(
-        padding: EdgeInsets.all(10.0),
+        padding: const EdgeInsets.all(10.0),
         decoration: BoxDecoration(
           border: Border.all(color: Colors.black),
           color: Colors.white,
